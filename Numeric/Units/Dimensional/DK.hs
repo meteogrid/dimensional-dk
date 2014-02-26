@@ -99,7 +99,7 @@ as the Prelude.
 -}
 
 infixr 8  ^, ^+, ^/, **
-infixl 7  * --, /
+infixl 7  *, /
 infixl 6  +, -
 
 
