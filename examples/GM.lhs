@@ -16,6 +16,7 @@ same epoch -- determine the value of 'mu' used to convert between the two.
 {{{
 
 > {-# LANGUAGE NegativeLiterals #-}
+> {-# LANGUAGE RebindableSyntax #-}
 > module GM where
 
 > import Numeric.Units.Dimensional.DK.Prelude
@@ -25,12 +26,12 @@ same epoch -- determine the value of 'mu' used to convert between the two.
 The state vector describing the orbit at epoch.
 {{{
 
-> x     =   4383.9449203752        *~ kilo meter
-> y     = -41940.917505092       *~ kilo meter
-> z     =     22.790255916589      *~ kilo meter
-> x_dot =      3.0575666627812     *~ (kilo meter / second)
-> y_dot =      0.32047068607303    *~ (kilo meter / second)
-> z_dot =      0.00084729371755294 *~ (kilo meter / second)
+> x     =   4383.9449203752        * kilo meter
+> y     = -41940.917505092         * kilo meter
+> z     =     22.790255916589      * kilo meter
+> x_dot =      3.0575666627812     * (kilo meter / second)
+> y_dot =      0.32047068607303    * (kilo meter / second)
+> z_dot =      0.00084729371755294 * (kilo meter / second)
 
 }}}
 From the state vector we calculate the distance from the reference frame center at epoch and the velocity squared at epoch.
@@ -50,7 +51,7 @@ The kinetic energy per unit mass at epoch is a function of the velocity.
 The only keplerian element we need for this calculation is the semi-major axis.
 {{{
 
-> semi_major_axis = 42165.221455 *~ kilo meter
+> semi_major_axis = 42165.221455 * kilo meter
 
 }}}
 The expression for 'mu' is obtained by solving the following equation system:
