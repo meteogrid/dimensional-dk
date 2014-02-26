@@ -99,7 +99,7 @@ as the Prelude.
 -}
 
 infixr 8  ^, ^+, ^/, **
-infixl 7  *, /
+infixl 7  * --, /
 infixl 6  +, -
 
 
@@ -118,63 +118,41 @@ We call this data type 'Dimensional' to capture the notion that the
 units and quantities it represents have physical dimensions.
 -}
 
-newtype Dimensional (v::Variant) (d::Dimension) a
-      = Dimensional a deriving (Eq, Ord, Enum)
+newtype Quantity (d :: Dimension) (v :: *)
+      = Quantity v deriving (Eq, Ord, Enum)
 
-{-
-The type variable 'a' is the only non-phantom type variable and
-represents the numerical value of a quantity or the scale (w.r.t.
-SI units) of a unit. For SI units the scale will always be 1. For
-non-SI units the scale is the ratio of the unit to the SI unit with
-the same physical dimension.
+data Unit (a :: Atomicity) (d :: Dimension) (v :: *)
+      = Unit String v
 
-Since 'a' is the only non-phantom type we were able to define
-'Dimensional' as a newtype, avoiding boxing at runtime.
+data Atomicity = Atomic | Composite
 
+type UnitName = String
 
-= The variety 'v' of 'Dimensional' =
+class Dimensional (var :: Dimension -> * -> *) where
+  extractValue :: var d v -> v
+  extractName :: var d v -> Maybe UnitName
+  injectValue :: (Maybe UnitName) -> v -> var d v
 
-The phantom type variable v is used to distinguish between units
-and quantities. It should be one of the following:
--}
+instance Dimensional Quantity where
+  extractValue (Quantity x) = x
+  extractName _ = Nothing
+  injectValue _ x = Quantity x
 
-data Variant = DUnit | DQuantity
+instance Dimensional (Unit a) where
+  extractValue (Unit _ x) = x
+  extractName (Unit n _) = Just n
+  injectValue (Just n) x = Unit n x
+  injectValue _ x = Prelude.error "Shouldn't be reachable. Needed to name a quantity."
 
-{-
-For convenience we define type synonyms for units and quantities.
--}
+type family DimensionalCombination (v1 :: Dimension -> * -> *) (v2 :: Dimension -> * -> *) :: Dimension -> * -> * where
+  DimensionalCombination (Quantity) (Quantity) = Quantity
+  DimensionalCombination (Quantity) (Unit a2)  = Quantity
+  DimensionalCombination (Unit a1)  (Quantity) = Quantity
+  DimensionalCombination (Unit a1)  (Unit a2)  = Unit Composite
 
-type Unit     = Dimensional DUnit
-type Quantity = Dimensional DQuantity
-
-{-
-The relationship between (the value of) a 'Quantity', its numerical
-value and its 'Unit' is described in 7.1 "Value and numerical value
-of a quantity" of [1]. In short a 'Quantity' is the product of a
-number and a 'Unit'. We define the '(*~)' operator as a convenient
-way to declare quantities as such a product.
--}
-
-(*~) :: Num a => a -> Unit d a -> Quantity d a
-x *~ Dimensional y = Dimensional (x Prelude.* y)
-
-{-
-Conversely, the numerical value of a 'Quantity' is obtained by
-dividing the 'Quantity' by its 'Unit' (any unit with the same
-physical dimension). The '(/~)' operator provides a convenient way
-of obtaining the numerical value of a quantity.
--}
-
-(/~) :: Fractional a => Quantity d a -> Unit d a -> a
-Dimensional x /~ Dimensional y = x Prelude./ y
-
-{-
-We give '*~' and '/~' the same fixity as '*' and '/' defined below.
-Note that this necessitates the use of parenthesis when composing
-units using '*' and '/', e.g. "1 *~ (meter / second)".
--}
-
-infixl 7  *~, /~
+type family DimensionalDropAtomicity (v1 :: Dimension -> * -> *) :: Dimension -> * -> * where
+  DimensionalDropAtomicity (Unit a)   = Unit Composite
+  DimensionalDropAtomicity (Quantity) = Quantity
 
 {-
 
@@ -315,17 +293,37 @@ forward. In particular the type signatures are much simplified.
 Multiplication, division and powers apply to both units and quantities.
 -}
 
-(*) :: Num a
-    => Dimensional v d a -> Dimensional v d' a -> Dimensional v (d * d') a
-Dimensional x * Dimensional y = Dimensional (x Prelude.* y)
+liftUntyped :: (Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1) => (v -> v) -> (v1 d1 v) -> (v2 d2 v)
+liftUntyped f x = let x' = extractValue x
+                      n' = (Just "hmmm")
+                   in injectValue n' (f x')
 
-(/) :: Fractional a
-    => Dimensional v d a -> Dimensional v d' a -> Dimensional v (d / d') a
-Dimensional x / Dimensional y = Dimensional (x Prelude./ y)
+liftUntypedQ :: (Dimensional v1) => (v -> v) -> v1 d1 v -> Quantity d2 v
+liftUntypedQ f x = let x' = extractValue x
+                    in Quantity (f x')
 
-(^) :: (ToInteger (NT i), Fractional a)
-    => Dimensional v d a -> NT i -> Dimensional v (d ^ i) a
-Dimensional x ^ n = Dimensional (x Prelude.^^ toNum n)
+liftUntyped2 :: (Dimensional v1, Dimensional v2, Dimensional v3, v3 ~ DimensionalCombination v1 v2) => (v -> v -> v) -> v1 d1 v -> v2 d2 v -> v3 d3 v
+liftUntyped2 f x1 x2 = let x1' = extractValue x1
+                           x2' = extractValue x2
+                           n1 = extractName x1
+                           n2 = extractName x2
+                        in injectValue n1 (f x1' x2') 
+
+liftUntyped2Q :: (Dimensional v1, Dimensional v2) => (v -> v -> v) -> v1 d1 v -> v2 d2 v -> Quantity d3 v
+liftUntyped2Q f x1 x2 = let x1' = extractValue x1
+                            x2' = extractValue x2
+                         in Quantity (f x1' x2') 
+
+(*) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Num v) => v1 d1 v -> v2 d2 v -> p (d1 * d2) v
+(*) = liftUntyped2 (Prelude.*)
+
+(/) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Fractional v) => v1 d1 v -> v2 d2 v -> p (d1 / d2) v
+(/) = liftUntyped2 (Prelude./)
+
+(^) :: (ToInteger (NT i), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Fractional v)
+    => v1 d1 v -> NT i -> v2 (d1 ^ i) v
+x ^ n = let n' = (toNum n) :: Integer
+         in liftUntyped (Prelude.^^ n') x
 
 {-
 In the unlikely case someone needs to use this library with
@@ -333,9 +331,10 @@ non-fractional numbers we provide the alternative power operator
 '^+' that is restricted to positive exponents.
 -}
 
-(^+) :: (ToInteger (NP n), Num a)
-     => Dimensional v d a -> NP n -> Dimensional v (d ^ P n) a
-Dimensional x ^+ n = Dimensional (x Prelude.^ toNum n)
+(^+) :: (ToInteger (NP n), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Num v)
+     => v1 d1 v -> NP n -> v2 (d1 ^ P n) v
+x ^+ n = let n' = (toNum n) :: Integer
+          in liftUntyped (Prelude.^ n') x
 
 {-
 A special case is that dimensionless quantities are not restricted
@@ -350,38 +349,42 @@ Of these, negation, addition and subtraction are particularly simple
 as they are done in a single physical dimension.
 -}
 
-negate :: Num a => Quantity d a -> Quantity d a
-negate (Dimensional x) = Dimensional (Prelude.negate x)
+negate :: (Dimensional v1, Num v) => v1 d v -> Quantity d v
+negate = liftUntypedQ (Prelude.negate)
 
-(+) :: Num a => Quantity d a -> Quantity d a -> Quantity d a
-Dimensional x + Dimensional y = Dimensional (x Prelude.+ y)
+(+) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Num v) => v1 d v -> v2 d v -> Quantity d v
+(+) = liftUntyped2Q (Prelude.+)
 
-(-) :: Num a => Quantity d a -> Quantity d a -> Quantity d a
-x - y = x + negate y
+(-) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Num v) => v1 d v -> v2 d v -> Quantity d v
+(-) = liftUntyped2Q (Prelude.-)
 
 {-
 Absolute value.
 -}
 
-abs :: Num a => Quantity d a -> Quantity d a
-abs (Dimensional x) = Dimensional (Prelude.abs x)
+abs :: (Dimensional v1, Num v) => v1 d v -> Quantity d v
+abs = liftUntypedQ (Prelude.abs)
+
 
 {-
 Roots of arbitrary (integral) degree. Appears to occasionally be useful
 for units as well as quantities.
 -}
 
-nroot :: (Floating a, ToInteger (NT n))
-      => NT n -> Dimensional v d a -> Dimensional v (Root d n) a
-nroot n (Dimensional x) = Dimensional (x Prelude.** (1 Prelude./ N.toNum n))
+nroot :: (ToInteger (NT n), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Floating v)
+      => NT n -> v1 d v -> v2 (Root d n) v
+nroot n = let n' = 1 Prelude./ toNum n
+           in liftUntyped (Prelude.** n')
 
 {-
 We provide short-hands for the square and cubic roots.
 -}
 
-sqrt :: Floating a => Dimensional v d a -> Dimensional v (Root d Pos2) a
+sqrt :: (Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Floating v)
+     => v1 d v -> v2 (Root d Pos2) v
 sqrt = nroot pos2
-cbrt :: Floating a => Dimensional v d a -> Dimensional v (Root d Pos3) a
+cbrt :: (Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Floating v)
+     => v1 d v -> v2 (Root d Pos3) v
 cbrt = nroot pos3
 
 {-
@@ -389,49 +392,30 @@ We also provide an operator alternative to nroot for those that
 prefer such.
 -}
 
-(^/) :: (ToInteger (NT n), Floating a)
-     => Dimensional v d a -> NT n -> Dimensional v (Root d n) a
+(^/) :: (ToInteger (NT n), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Floating v)
+     => v1 d v -> NT n -> v2 (Root d n) v
 (^/) = flip nroot
 
 {-
 Since quantities form a monoid under addition, but not under multiplication unless they are dimensionless,
 we will define a monoid instance that adds.
 -}
-instance (Num a) => Monoid (Quantity d a) where
+instance (Num v) => Monoid (Quantity d v) where
   mempty = _0
   mappend = (+)
-
-{-
-
-= List functions =
-
-Here we define operators and functions to make working with homogenuous
-lists of dimensionals more convenient.
-
-We define two convenience operators for applying units to all
-elements of a functor (e.g. a list).
--}
-
-(*~~) :: (Functor f, Num a) => f a -> Unit d a -> f (Quantity d a)
-xs *~~ u = fmap (*~ u) xs
-
-(/~~) :: (Functor f, Fractional a) => f (Quantity d a) -> Unit d a -> f a
-xs /~~ u = fmap (/~ u) xs
-
-infixl 7  *~~, /~~
 
 {-
 The sum of all elements in a list.
 -}
 
-sum :: (Num a, Foldable f) => f (Quantity d a) -> Quantity d a
+sum :: (Num v, Foldable f) => f (Quantity d v) -> Quantity d v
 sum = foldr (+) _0
 
 {-
 The arithmetic mean of all elements in a list.
 -}
 
-mean :: (Fractional a, Foldable f) => f (Quantity d a) -> Quantity d a
+mean :: (Fractional v, Foldable f) => f (Quantity d v) -> Quantity d v
 mean = uncurry (/) . foldr accumulate (_0, _0)
   where
     accumulate val (accum, count) = (accum + val, count + _1)
@@ -441,8 +425,8 @@ The length of the list as a 'Dimensionless'. This can be useful for
 purposes of e.g. calculating averages.
 -}
 
-dimensionlessLength :: Num a => [Dimensional v d a] -> Dimensionless a
-dimensionlessLength = Dimensional . genericLength
+dimensionlessLength :: (Dimensional v1, Num v) => [(v1 d v)] -> Dimensionless v
+dimensionlessLength = dimensionless . genericLength
 
 {-
 
@@ -454,7 +438,7 @@ We provide this freedom by making 'Dimensionless' an instance of
 -}
 
 instance Functor Dimensionless where
-  fmap f (Dimensional x) = Dimensional (f x)
+  fmap f (Quantity x) = Quantity (f x)
 
 {-
 We continue by defining elementary functions on 'Dimensionless'
@@ -478,16 +462,16 @@ asinh = fmap Prelude.asinh
 acosh = fmap Prelude.acosh
 atanh = fmap Prelude.atanh
 
-(**) :: Floating a => Dimensionless a -> Dimensionless a -> Dimensionless a
-Dimensional x ** Dimensional y = Dimensional (x Prelude.** y)
+(**) :: (Dimensional v1, Dimensional v2, Floating v) => v1 DOne v -> v2 DOne v -> Dimensionless v
+(**) = liftUntyped2Q (Prelude.**)
 
 {-
 For 'atan2' the operands need not be dimensionless but they must be
 of the same type. The result will of course always be dimensionless.
 -}
 
-atan2 :: RealFloat a => Quantity d a -> Quantity d a -> Dimensionless a
-atan2 (Dimensional y) (Dimensional x) = Dimensional (Prelude.atan2 y x)
+atan2 :: (Dimensional v1, Dimensional v2, RealFloat v) => v1 d v -> v2 d v -> Dimensionless v
+atan2 = liftUntyped2Q Prelude.atan2
 
 {-
 The only unit we will define in this module is 'one'. The unit one
@@ -499,8 +483,8 @@ as we would any other unit to perform the "boxing" of dimensionless
 values.
 -}
 
-one :: Num a => Unit DOne a
-one = Dimensional 1
+one :: Num a => Unit Composite DOne a
+one = Unit "1" 1
 
 {-
 For convenience we define some constants for small integer values
@@ -514,18 +498,27 @@ to the dimensionless value zero.
 -}
 
 _0 :: Num a => Quantity d a
-_0 = Dimensional 0
+_0 = Quantity 0
+
+dimensionless :: Num a => a -> Quantity DOne a
+dimensionless = Quantity
+
+unD :: (Dimensional v1) => v1 DOne v -> v
+unD = extractValue
+
+fromRational :: (Fractional a) => Prelude.Rational -> Quantity DOne a
+fromRational = dimensionless . (Prelude.fromRational)
 
 _1, _2, _3, _4, _5, _6, _7, _8, _9 :: (Num a) => Dimensionless a
-_1 = 1 *~ one
-_2 = 2 *~ one
-_3 = 3 *~ one
-_4 = 4 *~ one
-_5 = 5 *~ one
-_6 = 6 *~ one
-_7 = 7 *~ one
-_8 = 8 *~ one
-_9 = 9 *~ one
+_1 = dimensionless 1
+_2 = dimensionless 2
+_3 = dimensionless 3
+_4 = dimensionless 4
+_5 = dimensionless 5
+_6 = dimensionless 6
+_7 = dimensionless 7
+_8 = dimensionless 8
+_9 = dimensionless 9
 
 {-
 For background on 'tau' see http://tauday.com/tau-manifesto (but also
@@ -533,7 +526,7 @@ feel free to review http://www.thepimanifesto.com).
 -}
 
 pi, tau :: Floating a => Dimensionless a
-pi = Prelude.pi *~ one
+pi = dimensionless Prelude.pi
 tau = _2 * pi
 
 {-
@@ -568,7 +561,7 @@ instance ( ToInteger (NT l)
                 (toNum (undefined :: NT n))
                 (toNum (undefined :: NT j))
 
-getSIBasis :: forall v d a. KnownDimension d => Dimensional v d a -> Dimension'
+getSIBasis :: forall val d v.(KnownDimension d) => val d v -> Dimension'
 getSIBasis _ = toSIBasis (Proxy :: Proxy d)
 
 {-
@@ -584,11 +577,17 @@ in a way that distinguishes them from quantities, or whether that is
 even a requirement.
 -}
 
-instance (KnownDimension d, Show a) => Show (Quantity d a) where
-      show q@(Dimensional x) = let powers = asList $ getSIBasis q
-                                   units = ["m", "kg", "s", "A", "K", "mol", "cd"]
-                                   dims = zipWith dimUnit units powers
-                               in foldl' (++) (show x) dims
+instance (KnownDimension d, Num v, Show v) => Show (Quantity d v) where
+      show q@(Quantity x) = let powers = asList $ getSIBasis q
+                                units = ["m", "kg", "s", "A", "K", "mol", "cd"]
+                                dims = zipWith dimUnit units powers
+                             in foldl' (++) (show x) dims
+
+instance (KnownDimension d, Num v, Show v) => Show (Unit a d v) where
+      show q@(Unit _ x) = let powers = asList $ getSIBasis q
+                              units = ["m", "kg", "s", "A", "K", "mol", "cd"]
+                              dims = zipWith dimUnit units powers
+                           in foldl' (++) (show x) dims
 
 {-
 The helper function 'dimUnit' defined next conditions a 'String' (unit)
@@ -619,8 +618,16 @@ a unit. The 'prefix' function will be used by other modules to
 define the SI prefixes and non-SI units.
 -}
 
-prefix :: Num a => a -> Unit d a -> Unit d a
-prefix x (Dimensional y) = Dimensional (x Prelude.* y)
+data UnitPrefix v = UnitPrefix String v
+
+applyPrefix :: (Num v) => UnitPrefix v -> Unit Atomic d v -> Unit Composite d v
+applyPrefix (UnitPrefix n1 v1) (Unit n2 v2) = Unit (n1 ++ n2) (v1 Prelude.* v2)
+
+prefix :: Num v => String -> v -> Unit Atomic d v -> Unit Composite d v
+prefix name val = applyPrefix $ UnitPrefix name val
+
+alias :: (Dimensional v1, Num v) => String -> v1 d v -> Unit Atomic d v
+alias name x = Unit name (extractValue x)
 
 {-
 

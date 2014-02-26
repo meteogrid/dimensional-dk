@@ -34,7 +34,7 @@ dimensionality type synonyms are provided for each quantity type.
 > import Numeric.Units.Dimensional.DK
 >   ( Dimension (Dim), Quantity, Dimensionless
 >   , DOne, DLuminousIntensity, DThermodynamicTemperature
->   , Unit, DLength, (^+) -- Used only for 'square' and 'cubic'.
+>   , Unit, DLength, (^+), Atomicity(Composite) -- Used only for 'square' and 'cubic'.
 >   )
 > import Numeric.NumType.DK
 >   ( Neg3, Neg2, Neg1, Zero, Pos1, Pos2, Pos3, Pos4
@@ -98,9 +98,9 @@ It is permissible to express powers of length units by prefixing
 'square' and 'cubic' (see section 9.6 "Spelling unit names raised
 to powers" of [1]).
 
-> square :: (Num a) => Unit DLength a -> Unit DArea a
+> square :: (Num v) => Unit a DLength v -> Unit Composite DArea v
 > square x = x ^+ pos2
-> cubic  :: (Num a) => Unit DLength a -> Unit DVolume a
+> cubic  :: (Num v) => Unit a DLength v -> Unit Composite DVolume v
 > cubic  x = x ^+ pos3
 
 These definitions may seem slightly out of place but these is no

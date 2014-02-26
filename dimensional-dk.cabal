@@ -32,13 +32,15 @@ Build-Depends:       base < 5,
                      time < 1.5,
                      numtype-dk < 0.3
 Exposed-Modules:     Numeric.Units.Dimensional.DK,
-                     Numeric.Units.Dimensional.DK.Prelude,
                      Numeric.Units.Dimensional.DK.Quantities,
-                     Numeric.Units.Dimensional.DK.SIUnits,
-                     Numeric.Units.Dimensional.DK.NonSI
+                     Numeric.Units.Dimensional.DK.SIUnits
 Extra-source-files:  README,
                      Test.hs,
                      Numeric/Units/Dimensional/DK/Test.hs,
                      Numeric/Units/Dimensional/DK/QuantitiesTest.hs,
                      examples/README,
                      examples/GM.lhs
+
+--                     Numeric.Units.Dimensional.DK.SIUnits
+--                     Numeric.Units.Dimensional.DK.Prelude,
+--                     Numeric.Units.Dimensional.DK.NonSI
