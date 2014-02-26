@@ -103,7 +103,7 @@ as the Prelude.
 infixr 8  ^, ^+, ^/, **
 infixl 7  *, /
 infixl 6  +, -
-
+infixl 7 /~
 
 {-
 = Dimensional =
@@ -507,6 +507,9 @@ dimensionless = Quantity
 
 unD :: (Dimensional v1) => v1 DOne v -> v
 unD = extractValue
+
+(/~) :: (Dimensional v1, Dimensional v2, Dimensional (DimensionalCombination v1 v2), Fractional v) => v1 d v -> v2 d v -> v
+x /~ y = unD $ x / y
 
 fromRational :: (Fractional a) => Prelude.Rational -> Quantity DOne a
 fromRational = dimensionless . (Prelude.fromRational)
