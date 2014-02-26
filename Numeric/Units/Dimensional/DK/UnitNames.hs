@@ -49,10 +49,10 @@ instance Show UnitName where
   show = fullName
 
 abbreviation :: UnitName -> String
-abbreviation (UnitName m) = concatMap (raiseToPower fst) $ M.toList m
+abbreviation (UnitName m) = unwords $ map (raiseToPower fst) $ M.toList m
 
 fullName :: UnitName -> String
-fullName (UnitName m) = concatMap (raiseToPower snd) $ M.toList m
+fullName (UnitName m) = unwords $ map (raiseToPower snd) $ M.toList m
 
 raiseToPower :: ((String,String) -> String) -> ((String, String), Int) -> String
 raiseToPower extract (n, 0) = ""
