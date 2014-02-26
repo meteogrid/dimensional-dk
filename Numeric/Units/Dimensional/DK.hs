@@ -91,6 +91,8 @@ import qualified Numeric.NumType.DK as N
 import Data.Proxy (Proxy(..))
 import Data.Foldable (Foldable(foldr, foldl'))
 import Data.Monoid (Monoid(..))
+import qualified Numeric.Units.Dimensional.DK.UnitNames as Name
+import Numeric.Units.Dimensional.DK.UnitNames (NameAtom, UnitName, UnitNameTransformer)
 
 {-
 We will reuse the operators and function names from the Prelude.
@@ -122,11 +124,9 @@ newtype Quantity (d :: Dimension) (v :: *)
       = Quantity v deriving (Eq, Ord, Enum)
 
 data Unit (a :: Atomicity) (d :: Dimension) (v :: *)
-      = Unit String v
+      = Unit UnitName v
 
 data Atomicity = Atomic | Composite
-
-type UnitName = String
 
 class Dimensional (var :: Dimension -> * -> *) where
   extractValue :: var d v -> v
@@ -244,6 +244,7 @@ dimensions' exponents.
 
 type family (a::Dimension) / (d::Dimension) where
   d / DOne = d
+  d / d = DOne
   (Dim l  m  t  i  th  n  j) / (Dim l' m' t' i' th' n' j')
     = Dim (l - l') (m - m') (t - t') (i - i') (th - th') (n - n') (j - j')
 
@@ -295,19 +296,20 @@ Multiplication, division and powers apply to both units and quantities.
 
 liftUntyped :: (Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1) => (v -> v) -> (v1 d1 v) -> (v2 d2 v)
 liftUntyped f x = let x' = extractValue x
-                      n' = (Just "hmmm")
+                      n' = extractName x
                    in injectValue n' (f x')
 
 liftUntypedQ :: (Dimensional v1) => (v -> v) -> v1 d1 v -> Quantity d2 v
 liftUntypedQ f x = let x' = extractValue x
                     in Quantity (f x')
 
-liftUntyped2 :: (Dimensional v1, Dimensional v2, Dimensional v3, v3 ~ DimensionalCombination v1 v2) => (v -> v -> v) -> v1 d1 v -> v2 d2 v -> v3 d3 v
-liftUntyped2 f x1 x2 = let x1' = extractValue x1
-                           x2' = extractValue x2
-                           n1 = extractName x1
-                           n2 = extractName x2
-                        in injectValue n1 (f x1' x2') 
+liftUntyped2 :: (Dimensional v1, Dimensional v2, Dimensional v3, v3 ~ DimensionalCombination v1 v2) => (v -> v -> v) -> UnitNameTransformer -> v1 d1 v -> v2 d2 v -> v3 d3 v
+liftUntyped2 f nt x1 x2 = let x1' = extractValue x1
+                              x2' = extractValue x2
+                              n1 = extractName x1
+                              n2 = extractName x2
+                              n' = nt n1 n2
+                        in injectValue n' (f x1' x2') 
 
 liftUntyped2Q :: (Dimensional v1, Dimensional v2) => (v -> v -> v) -> v1 d1 v -> v2 d2 v -> Quantity d3 v
 liftUntyped2Q f x1 x2 = let x1' = extractValue x1
@@ -315,10 +317,10 @@ liftUntyped2Q f x1 x2 = let x1' = extractValue x1
                          in Quantity (f x1' x2') 
 
 (*) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Num v) => v1 d1 v -> v2 d2 v -> p (d1 * d2) v
-(*) = liftUntyped2 (Prelude.*)
+(*) = liftUntyped2 (Prelude.*) (Name.product)
 
 (/) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Fractional v) => v1 d1 v -> v2 d2 v -> p (d1 / d2) v
-(/) = liftUntyped2 (Prelude./)
+(/) = liftUntyped2 (Prelude./) (Name.quotient)
 
 (^) :: (ToInteger (NT i), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Fractional v)
     => v1 d1 v -> NT i -> v2 (d1 ^ i) v
@@ -484,7 +486,7 @@ values.
 -}
 
 one :: Num a => Unit Composite DOne a
-one = Unit "1" 1
+one = Unit Name.nameOne 1
 
 {-
 For convenience we define some constants for small integer values
@@ -618,16 +620,27 @@ a unit. The 'prefix' function will be used by other modules to
 define the SI prefixes and non-SI units.
 -}
 
-data UnitPrefix v = UnitPrefix String v
+data UnitPrefix v = UnitPrefix NameAtom v
 
 applyPrefix :: (Num v) => UnitPrefix v -> Unit Atomic d v -> Unit Composite d v
-applyPrefix (UnitPrefix n1 v1) (Unit n2 v2) = Unit (n1 ++ n2) (v1 Prelude.* v2)
+applyPrefix (UnitPrefix n1 v1) (Unit n2 v2) = let n2' = Name.asAtom n2
+                                                  in case n2' of
+                                                       Nothing -> Prelude.error "Atomic unit turned out to have a composite name!"
+                                                       (Just n2'') -> Unit (Name.atomic $ Name.applyPrefix n1 n2'') (v1 Prelude.* v2)
 
-prefix :: Num v => String -> v -> Unit Atomic d v -> Unit Composite d v
+prefix :: Num v => NameAtom -> v -> Unit Atomic d v -> Unit Composite d v
 prefix name val = applyPrefix $ UnitPrefix name val
 
-alias :: (Dimensional v1, Num v) => String -> v1 d v -> Unit Atomic d v
-alias name x = Unit name (extractValue x)
+alias :: (Dimensional v1, Num v) => NameAtom -> v1 d v -> Unit Atomic d v
+alias name x = Unit (Name.atomic name) (extractValue x)
+
+name :: Unit a d v -> UnitName
+name (Unit n _) = n
+
+showIn :: (Dimensional v1, Fractional v, Show v, Dimensional (DimensionalCombination v1 (Unit a))) => Unit a d v -> v1 d v -> String
+showIn u q = let q' = unD $ q / u
+                 n' = show $ name u
+              in (show q') ++ " " ++ n'
 
 {-
 

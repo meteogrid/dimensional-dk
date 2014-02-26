@@ -31,6 +31,7 @@ referenced are from [1] unless otherwise specified.
 > import Data.Time.Clock (DiffTime)
 > import Prelude ( (.), Num, Real (toRational), fromInteger, ($), floor, Fractional(fromRational), Floating, recip )
 > import qualified Prelude
+> import Numeric.Units.Dimensional.DK.UnitNames (atomic)
 
 
 = SI prefixes (section 4.4) =
@@ -47,32 +48,32 @@ We define all SI prefixes from Table 5. Multiples first.
 
 > deka, deca, hecto, kilo, mega, giga, tera, peta, exa, zetta, yotta
 >   :: Num v => Unit Atomic d v -> Unit Composite d v
-> deka  = prefix "da" (asNum 1e1) -- International English.
+> deka  = prefix ("da", "deca")  (asNum 1e1) -- International English.
 > deca  = deka      -- American English.
-> hecto = prefix "ha" (asNum 1e2)
-> kilo  = prefix "k"  (asNum 1e3)
-> mega  = prefix "M"  (asNum 1e6)
-> giga  = prefix "G"  (asNum 1e9)
-> tera  = prefix "T"  (asNum 1e12)
-> peta  = prefix "P"  (asNum 1e15)
-> exa   = prefix "E"  (asNum 1e18)
-> zetta = prefix "Z"  (asNum 1e21)
-> yotta = prefix "Y"  (asNum 1e24)
+> hecto = prefix ("ha", "hecto") (asNum 1e2)
+> kilo  = prefix ("k", "kilo")   (asNum 1e3)
+> mega  = prefix ("M", "mega")   (asNum 1e6)
+> giga  = prefix ("G", "giga")   (asNum 1e9)
+> tera  = prefix ("T", "tera")   (asNum 1e12)
+> peta  = prefix ("P", "peta")   (asNum 1e15)
+> exa   = prefix ("E", "eta")    (asNum 1e18)
+> zetta = prefix ("Z", "zetta")  (asNum 1e21)
+> yotta = prefix ("Y", "yotta")  (asNum 1e24)
 
 Then the submultiples.
 
 > deci, centi, milli, micro, nano, pico, femto, atto, zepto, yocto
 >   :: Fractional v => Unit Atomic d v -> Unit Composite d v
-> deci  = prefix "d" 1e-1
-> centi = prefix "c" 1e-2
-> milli = prefix "m" 1e-3
-> micro = prefix "u" 1e-6
-> nano  = prefix "n" 1e-9
-> pico  = prefix "p" 1e-12
-> femto = prefix "f" 1e-15
-> atto  = prefix "a" 1e-18
-> zepto = prefix "z" 1e-21
-> yocto = prefix "y" 1e-24
+> deci  = prefix ("d", "deci")  1e-1
+> centi = prefix ("c", "centi") 1e-2
+> milli = prefix ("m", "milli") 1e-3
+> micro = prefix ("u", "micro") 1e-6
+> nano  = prefix ("n", "nano")  1e-9
+> pico  = prefix ("p", "pico")  1e-12
+> femto = prefix ("f", "femto") 1e-15
+> atto  = prefix ("a", "atto")  1e-18
+> zepto = prefix ("z", "zepto") 1e-21
+> yocto = prefix ("y", "yocto") 1e-24
 
 By defining SI prefixes as functions applied to a 'Unit' we satisfy
 section 6.2.6 "Unacceptability of stand-alone prefixes".
@@ -89,7 +90,7 @@ singular form, as allowed by section 9.7 "Other spelling conventions".
 We define the SI base units in the order of table 1.
 
 > metre, meter :: Num v => Unit Atomic DLength v
-> metre = Unit "m" 1 -- International English.
+> metre = Unit (atomic ("m", "meter")) 1 -- International English.
 > meter = metre         -- American English.
 
 For mass the SI base unit is kilogram. For sensible prefixes we
@@ -97,17 +98,17 @@ define gram here (see section 6.2.7 "Prefixes and the kilogram").
 The drawback is that we are forced to use 'Fractional'.
 
 > gram    :: Fractional v => Unit Atomic DMass v
-> gram    = Unit "g" 1e-3
+> gram    = Unit (atomic ("g", "gram")) 1e-3
 > second  :: Num v => Unit Atomic DTime v
-> second  = Unit "s" 1
+> second  = Unit (atomic ("s", "second")) 1
 > ampere  :: Num v => Unit Atomic DElectricCurrent v
-> ampere  = Unit "A" 1
+> ampere  = Unit (atomic ("A", "ampere")) 1
 > kelvin  :: Num v => Unit Atomic DThermodynamicTemperature v
-> kelvin  = Unit "K" 1
+> kelvin  = Unit (atomic ("K", "kelvin")) 1
 > mole    :: Num v => Unit Atomic DAmountOfSubstance v
-> mole    = Unit "mol" 1
+> mole    = Unit (atomic ("mol", "mole")) 1
 > candela :: Num v => Unit Atomic DLuminousIntensity v
-> candela = Unit "cd" 1
+> candela = Unit (atomic ("cd", "candela")) 1
 
 
 = DiffTime conversion =
@@ -139,43 +140,43 @@ organization we provide definitions grouped by table in [1].
 radian and steradian."
 
 > radian :: Fractional a => Unit Atomic DPlaneAngle a
-> radian = alias "rad" one -- meter * meter ^ neg1
+> radian = alias ("rad", "radian") one -- meter * meter ^ neg1
 > steradian :: Fractional a => Unit Atomic DSolidAngle a
-> steradian = alias "sr" one -- meter ^ pos2 * meter ^ neg2
+> steradian = alias ("sr", "steradian") one -- meter ^ pos2 * meter ^ neg2
 > hertz :: Fractional a => Unit Atomic DFrequency a
-> hertz = alias "Hz" (second ^ neg1)
+> hertz = alias ("Hz", "hertz") (second ^ neg1)
 > newton :: Fractional a => Unit Atomic DForce a
-> newton = alias "N" (kilo gram * meter * second ^ neg2)
+> newton = alias ("N", "newton") (kilo gram * meter * second ^ neg2)
 > pascal :: Fractional a => Unit Atomic DPressure a
-> pascal = alias "Pa" (newton / meter ^ pos2)
+> pascal = alias ("Pa", "pascal") (newton / meter ^ pos2)
 > joule :: Fractional a => Unit Atomic DEnergy a
-> joule = alias "J" (newton * meter)
+> joule = alias ("J", "joule") (newton * meter)
 > watt :: Fractional a => Unit Atomic DPower a
-> watt = alias "W" (joule / second)
+> watt = alias ("W", "watt") (joule / second)
 > coulomb :: Fractional a => Unit Atomic DElectricCharge a
-> coulomb = alias "C" (second * ampere)
+> coulomb = alias ("C", "coulomb") (second * ampere)
 > volt :: Fractional a => Unit Atomic DElectricPotential a
-> volt = alias "V" (watt / ampere)
+> volt = alias ("V", "volt") (watt / ampere)
 > farad :: Fractional a => Unit Atomic DCapacitance a
-> farad = alias "F" (coulomb / volt)
+> farad = alias ("F", "farad") (coulomb / volt)
 > ohm :: Fractional a => Unit Atomic DElectricResistance a
-> ohm = alias "ohm" (volt / ampere)
+> ohm = alias ("ohm", "ohm") (volt / ampere)
 > siemens :: Fractional a => Unit Atomic DElectricConductance a
-> siemens = alias "siemens" (ampere / volt)
+> siemens = alias ("S", "siemens") (ampere / volt)
 > weber :: Fractional a => Unit Atomic DMagneticFlux a
-> weber = alias "Wb" (volt * second)
+> weber = alias ("Wb", "weber") (volt * second)
 > tesla :: Fractional a => Unit Atomic DMagneticFluxDensity a
-> tesla = alias "T" (weber / meter ^ pos2)
+> tesla = alias ("T", "tesla") (weber / meter ^ pos2)
 > henry :: Fractional a => Unit Atomic DInductance a
-> henry = alias "H" (weber / ampere)
+> henry = alias ("H", "henry") (weber / ampere)
 
 We defer the definition of Celcius temperature to the end (would
 appear here if we stricly followed table 3a).
 
 > lumen :: Fractional a => Unit Atomic DLuminousFlux a
-> lumen = alias "lm" (candela / steradian)
+> lumen = alias ("lm", "lumen") (candela / steradian)
 > lux :: Fractional a => Unit Atomic DIlluminance a
-> lux = alias "lx" (lumen / meter ^ pos2)
+> lux = alias ("lx", "lux") (lumen / meter ^ pos2)
 
 === Degree Celsius ===
 
@@ -187,7 +188,7 @@ is appropriate to define a unit for use with relative quantities
 unit with functions for converting absolute values.
 
 > degreeCelsius :: Num a => Unit Atomic DCelsiusTemperature a
-> degreeCelsius = alias "degC" kelvin
+> degreeCelsius = alias ("degC", "degree Celsius") kelvin
 
 The function 'fromDegreeCelsiusAbsolute' should be used in lieu of
 "*~ degreeCelsius" when working with absolute temperatures. Similarily,
@@ -208,7 +209,7 @@ of safeguarding human health"
 We use the same grouping as for table 3a.
 
 > becquerel :: Fractional a => Unit Atomic DActivity a
-> becquerel = alias "Bq" (second ^ neg1)
+> becquerel = alias ("Bq", "becquerel") (second ^ neg1)
 
 Above we gave a new name to the dimensionality instead of reusing
 'Frequency' in the quantity type definition. This will allow GHCi
@@ -218,9 +219,9 @@ quantity types without a specific unit we don't bother doing this
 quantity type?).
 
 > gray :: Fractional a => Unit Atomic DAbsorbedDose a
-> gray = alias "Gy" (joule / kilo gram)
+> gray = alias ("Gy", "gray") (joule / kilo gram)
 > sievert :: Fractional a => Unit Atomic DDoseEquivalent a
-> sievert = alias "Sv" (joule / kilo gram)
+> sievert = alias ("Sv", "sievert") (joule / kilo gram)
 
 
 = Units outside the SI =
@@ -237,17 +238,17 @@ We start with time which we grant exclusive rights to 'minute' and
 'second'.
 
 > minute, hour, day :: Num a => Unit Atomic DTime a
-> minute = alias "min" (dimensionless 60 * second)
-> hour   = alias "h" (dimensionless 60 * minute)
-> day    = alias "d" (dimensionless 24 * hour) -- Mean solar day.
+> minute = alias ("min", "minute") (dimensionless 60 * second)
+> hour   = alias ("h", "hour") (dimensionless 60 * minute)
+> day    = alias ("d", "day") (dimensionless 24 * hour) -- Mean solar day.
 
 Since 'minute' and 'second' are already in use for time we use
 'arcminute' and 'arcsecond' [2] for plane angle instead.
 
 > degree, arcminute, arcsecond :: Floating a => Unit Atomic DPlaneAngle a
-> degree = alias "degOfArc" (pi * radian / dimensionless 180)
-> arcminute = alias "minOfArc" (degree / dimensionless 60)
-> arcsecond = alias "secOfArc" (arcminute / dimensionless 60)
+> degree = alias ("degOfArc", "degree of arc") (pi * radian / dimensionless 180)
+> arcminute = alias ("minOfArc", "arcminute") (degree / dimensionless 60)
+> arcsecond = alias ("secOfArc", "arcsecond") (arcminute / dimensionless 60)
 
 Alternate (longer) forms of the above. In particular 'degreeOfArc'
 can be used if there is a percieved need to disambiguate from e.g.
@@ -259,22 +260,22 @@ temperature.
 > minuteOfArc = arcminute
 
 > hectare :: Fractional a => Unit Atomic DArea a
-> hectare = alias "ha" (square (hecto meter))
+> hectare = alias ("ha", "hectare") (square (hecto meter))
 
 > litre, liter :: Fractional a => Unit Atomic DVolume a
-> litre = alias "L" (deci meter ^ pos3) -- International English.
-> liter = litre             -- American English.
+> litre = alias ("L", "litre") (deci meter ^ pos3) -- International English. Capitalization of abbreviation is contentious but allowed, more readable in many fonts.
+> liter = alias ("L", "liter") litre             -- American English.
 
 > tonne, metricTon :: Fractional a => Unit Atomic DMass a
-> tonne     = alias "t" (dimensionless 1000 * (kilo gram)) -- Name in original SI text.
-> metricTon = tonne                   -- American name.
+> tonne     = alias ("t", "tonne") (dimensionless 1000 * (kilo gram)) -- Name in original SI text.
+> metricTon = alias ("t", "metric ton") tonne                   -- American name.
 
 In 2012 the IAU redefined the astronomical unit as a conventional
 unit of length directly tied to the meter, with a length of exactly
 149,597,870,700 m and the official abbreviation of au[3].
 
 > astronomicalUnit :: Num a => Unit Atomic DLength a
-> astronomicalUnit = alias "au" (dimensionless 149597870700 * meter)
+> astronomicalUnit = alias ("au", "astronomical unit") (dimensionless 149597870700 * meter)
 
 
 = References =
