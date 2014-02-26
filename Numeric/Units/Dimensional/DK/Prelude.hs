@@ -23,5 +23,5 @@ import Prelude hiding
     , abs, negate, pi, exp, log, sqrt
     , sin, cos, tan, asin, acos, atan, atan2
     , sinh, cosh, tanh, asinh, acosh, atanh
-    , sum
+    , sum, fromRational
     )  -- Hide definitions overridden by 'Numeric.Dimensional'.

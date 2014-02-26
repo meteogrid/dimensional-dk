@@ -24,10 +24,13 @@ otherwise specified.
 > and implementation.
 > -}
 
+> {-# LANGUAGE DataKinds #-}
+> {-# LANGUAGE RebindableSyntax #-}
 > module Numeric.Units.Dimensional.DK.NonSI where
 
 > import Numeric.Units.Dimensional.DK.Prelude
 > import qualified Prelude
+> import Prelude (fromInteger)
 
 
 = Neper, bel, shannon and the like =
@@ -47,10 +50,10 @@ When [1] was published The electronvolt had a standard combined
 uncertainity of 0.00000049e-19 J and the unified atomic mass unit
 had a combined uncertainty of 0.0000010e-27 kg.
 
-> electronVolt :: Fractional a => Unit DEnergy a
-> electronVolt = prefix 1.60217733e-19 joule
-> unifiedAtomicMassUnit :: Fractional a => Unit DMass a
-> unifiedAtomicMassUnit = prefix 1.6605402e-27 (kilo gram)
+> electronVolt :: Fractional a => Unit Atomic DEnergy a
+> electronVolt = alias "eV" (1.60217733e-19 * joule)
+> unifiedAtomicMassUnit :: Fractional a => Unit Atomic DMass a
+> unifiedAtomicMassUnit = alias "u" (1.6605402e-27 * (kilo gram))
 
 
 = Standard gravity =
@@ -61,52 +64,52 @@ body in free fall in a vacuum near the surface of the earth (note that
 local values of acceleration due to gravity will differ from the standard
 gravity). I.e. g_0 = 1 gee.
 
-> gee :: Fractional a => Unit DAcceleration a
-> gee = prefix 9.80665 meter / second ^ pos2
+> gee :: Fractional a => Unit Atomic DAcceleration a
+> gee = alias "g" (9.80665 * meter / second ^ pos2)
 
 
 = Inch-pound units =
 
 Some US customary (that is, inch-pound) units.
 
-> inch, foot, mil :: Fractional a => Unit DLength a
-> inch = prefix 2.54 (centi meter)
-> foot = prefix 12 inch     -- 0.3048 m
-> mil  = prefix 0.001 inch
-> poundMass, ounce :: Fractional a => Unit DMass a
-> poundMass = prefix 0.45359237 (kilo gram)
-> ounce     = prefix (1 Prelude./ 16) poundMass
+> inch, foot, mil :: Fractional a => Unit Atomic DLength a
+> inch = alias "in" (2.54 * (centi meter))
+> foot = alias "ft" (12.0 * inch) -- 0.3048 m
+> mil  = alias "mil" (0.001 * inch)
+> poundMass, ounce :: Fractional a => Unit Atomic DMass a
+> poundMass = alias "lbm" (0.45359237 * (kilo gram))
+> ounce     = alias "oz" (dimensionless (1 Prelude./ 16) * poundMass)
 
-> poundForce :: Fractional a => Unit DForce a
-> poundForce = poundMass * gee  -- 4.4482 N
+> poundForce :: Fractional a => Unit Atomic DForce a
+> poundForce = alias "lbf" (poundMass * gee)  -- 4.4482 N
 
 The slug is an alternative unit of mass defined in terms of the pound-force.
 
-> slug :: Fractional a => Unit DMass a
-> slug = poundForce * (second^pos2) / foot
+> slug :: Fractional a => Unit Atomic DMass a
+> slug = alias "slug" (poundForce * (second^pos2) / foot)
 
 Pounds of force per square inch.
 
-> psi :: Fractional a => Unit DPressure a
-> psi = poundForce / inch ^ pos2
+> psi :: Fractional a => Unit Atomic DPressure a
+> psi = alias "psi" (poundForce / inch ^ pos2)
 
 
 = Various other (non inch-pound) units =
 
-> yard, mile, nauticalMile :: (Fractional a) => Unit DLength a
-> yard = prefix 3 foot
-> mile = prefix 1760 yard
-> nauticalMile = prefix 1852 meter
-> knot :: (Fractional a) => Unit DVelocity a
-> knot = nauticalMile / hour
-> revolution :: (Floating a) => Unit DOne a
-> revolution = prefix (2 Prelude.* Prelude.pi) radian
-> solid :: (Floating a) => Unit DOne a
-> solid = prefix (4 Prelude.* Prelude.pi) steradian
-> teaspoon :: (Fractional a) => Unit DVolume a
-> teaspoon = prefix 5 (milli liter)
-> acre :: (Fractional a) => Unit DArea a
-> acre = prefix 43560 (square foot)
+> yard, mile, nauticalMile :: (Fractional a) => Unit Atomic DLength a
+> yard = alias "yd" (3.0 * foot)
+> mile = alias "mi" (1760.0 * yard)
+> nauticalMile = alias "nm" (1852.0 * meter)
+> knot :: (Fractional a) => Unit Atomic DVelocity a
+> knot = alias "kt" (nauticalMile / hour)
+> revolution :: (Floating a) => Unit Atomic DOne a
+> revolution = alias "r" (tau * radian)
+> solid :: (Floating a) => Unit Atomic DOne a
+> solid = alias "solid" (4.0 * pi * steradian)
+> teaspoon :: (Fractional a) => Unit Atomic DVolume a
+> teaspoon = alias "tsp" (5.0 * (milli liter))
+> acre :: (Fractional a) => Unit Atomic DArea a
+> acre = alias "acre" (43560.0 * (square foot))
 
 The IAU recommends[2] that:
 
@@ -118,17 +121,17 @@ This aligns well with my needs so I'm happy to oblige. We define
 the year in terms of seconds in order to avoid a 'Fractional'
 constraint, and also provide a Julian century.
 
-> year, century :: Num a => Unit DTime a
-> year    = prefix 31557600 second
-> century = prefix 100 year
+> year, century :: Num a => Unit Atomic DTime a
+> year    = alias "a" (dimensionless 31557600 * second)
+> century = alias "c" (dimensionless 100 * year)
 
 
 = Pressure units =
 
 Psi was defined earlier.
 
-> bar :: (Fractional a) => Unit DPressure a
-> bar = prefix 1.0e5 pascal
+> bar :: (Fractional a) => Unit Atomic DPressure a
+> bar = alias "bar" (1.0e5 * pascal)
 
 From Wikipedia[3]:
 
@@ -136,16 +139,16 @@ From Wikipedia[3]:
   approximately equal to typical air pressure at earth mean sea
   level.
 
-> atmosphere :: (Fractional a) => Unit DPressure a
-> atmosphere = prefix 101325 pascal
+> atmosphere :: (Fractional a) => Unit Atomic DPressure a
+> atmosphere = alias "atm" (101325.0 * pascal)
 
 From Wikipedia:
 
   A technical atmosphere (symbol: at) is a non-SI unit of pressure equal
   to one kilogram-force per square centimeter.
 
-> technicalAtmosphere :: (Fractional a) => Unit DPressure a
-> technicalAtmosphere = kilo gram * gee * centi meter ^ neg2
+> technicalAtmosphere :: (Fractional a) => Unit Atomic DPressure a
+> technicalAtmosphere = alias "at" (kilo gram * gee * centi meter ^ neg2)
 
 Manometric pressure units:
 
@@ -158,26 +161,26 @@ Per Wikipedia[4] one mmHg (millimeter of mercury) is defined as:
 The chosen fluid density approximately corresponds to that of mercury
 at 0 deg. Under most conditions, 1 mmHg is approximately equal to 1 torr.
 
-> mmHg :: (Fractional a) => Unit DPressure a
-> mmHg = prefix 13.5951 gram * centi meter ^ neg3 * milli meter * gee
+> mmHg :: (Fractional a) => Unit Atomic DPressure a
+> mmHg = alias "mmHg" (13.5951 * gram * centi meter ^ neg3 * milli meter * gee)
 
 One torr (symbol: Torr) is defined as 1/760 atm, which is approximately equal
 to 1 mmHg.
 
-> torr :: (Fractional a) => Unit DPressure a
-> torr = prefix (1 Prelude./ 760) atmosphere
+> torr :: (Fractional a) => Unit Atomic DPressure a
+> torr = alias "torr" (dimensionless (1 Prelude./ 760) * atmosphere)
 
 
 = Radiation =
 
-> rad :: (Fractional a) => Unit DAbsorbedDose a
-> rad = centi gray
+> rad :: (Fractional a) => Unit Atomic DAbsorbedDose a
+> rad = alias "rad" (centi gray)
 
 
 = Kinematic Viscosity =
 
-> stokes :: (Fractional a) => Unit DKinematicViscosity a
-> stokes = centi meter ^ pos2 / second
+> stokes :: (Fractional a) => Unit Atomic DKinematicViscosity a
+> stokes = alias "St" (centi meter ^ pos2 / second)
 
 
 = Imperial Volumes =
@@ -186,13 +189,13 @@ Per http://en.wikipedia.org/wiki/Imperial_units.
 
 > imperialGallon, imperialQuart, imperialPint, imperialCup,
 >                 imperialGill, imperialFluidOunce
->                 :: (Fractional a) => Unit DVolume a
-> imperialGallon = prefix 4.54609 liter
-> imperialQuart  = prefix (1 Prelude./ 4) imperialGallon
-> imperialPint   = prefix (1 Prelude./ 8) imperialGallon
-> imperialCup    = prefix 0.5 imperialPint
-> imperialGill   = prefix (1 Prelude./ 4) imperialPint
-> imperialFluidOunce = prefix (1 Prelude./ 20) imperialPint
+>                 :: (Fractional a) => Unit Atomic DVolume a
+> imperialGallon = alias "gal" (4.54609 * liter)
+> imperialQuart  = alias "qt" (dimensionless (1 Prelude./ 4) * imperialGallon)
+> imperialPint   = alias "pt" (dimensionless (1 Prelude./ 8) * imperialGallon)
+> imperialCup    = alias "cup" (0.5 * imperialPint) -- does this unit actually exist except by analogy with the US system? not in wiki table
+> imperialGill   = alias "gi" (dimensionless (1 Prelude./ 4) * imperialPint)
+> imperialFluidOunce = alias "fl oz" (dimensionless (1 Prelude./ 20) * imperialPint)
 
 
 = References =
