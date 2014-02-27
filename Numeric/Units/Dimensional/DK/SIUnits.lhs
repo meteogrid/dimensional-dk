@@ -1,4 +1,4 @@
-Numeric.Dimensional.SIUnits
+﻿Numeric.Dimensional.SIUnits
 Bjorn Buckwalter, bjorn@buckwalter.se
 License: BSD3
 
@@ -67,7 +67,7 @@ Then the submultiples.
 > deci  = prefix ("d", "deci")  1e-1
 > centi = prefix ("c", "centi") 1e-2
 > milli = prefix ("m", "milli") 1e-3
-> micro = prefix ("u", "micro") 1e-6
+> micro = prefix ("μ", "micro") 1e-6
 > nano  = prefix ("n", "nano")  1e-9
 > pico  = prefix ("p", "pico")  1e-12
 > femto = prefix ("f", "femto") 1e-15
@@ -160,7 +160,7 @@ radian and steradian."
 > farad :: Fractional a => Unit Atomic DCapacitance a
 > farad = alias ("F", "farad") (coulomb / volt)
 > ohm :: Fractional a => Unit Atomic DElectricResistance a
-> ohm = alias ("ohm", "ohm") (volt / ampere)
+> ohm = alias ("Ω", "ohm") (volt / ampere)
 > siemens :: Fractional a => Unit Atomic DElectricConductance a
 > siemens = alias ("S", "siemens") (ampere / volt)
 > weber :: Fractional a => Unit Atomic DMagneticFlux a
@@ -188,7 +188,7 @@ is appropriate to define a unit for use with relative quantities
 unit with functions for converting absolute values.
 
 > degreeCelsius :: Num a => Unit Atomic DCelsiusTemperature a
-> degreeCelsius = alias ("degC", "degree Celsius") kelvin
+> degreeCelsius = alias ("°C", "degree Celsius") kelvin
 
 The function 'fromDegreeCelsiusAbsolute' should be used in lieu of
 "*~ degreeCelsius" when working with absolute temperatures. Similarily,
@@ -246,9 +246,9 @@ Since 'minute' and 'second' are already in use for time we use
 'arcminute' and 'arcsecond' [2] for plane angle instead.
 
 > degree, arcminute, arcsecond :: Floating a => Unit Atomic DPlaneAngle a
-> degree = alias ("degOfArc", "degree of arc") (pi * radian / dimensionless 180)
-> arcminute = alias ("minOfArc", "arcminute") (degree / dimensionless 60)
-> arcsecond = alias ("secOfArc", "arcsecond") (arcminute / dimensionless 60)
+> degree = alias ("°", "degree of arc") (pi * radian / dimensionless 180)
+> arcminute = alias ("′", "arcminute") (degree / dimensionless 60)
+> arcsecond = alias ("″", "arcsecond") (arcminute / dimensionless 60)
 
 Alternate (longer) forms of the above. In particular 'degreeOfArc'
 can be used if there is a percieved need to disambiguate from e.g.
