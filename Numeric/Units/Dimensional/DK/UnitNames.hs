@@ -35,8 +35,7 @@ type UnitNameTransformer2 = Maybe UnitName -> Maybe UnitName -> Maybe UnitName
 toPower :: Int -> UnitNameTransformer
 toPower p = liftM $ toPower' p
 
-noName, product, quotient :: UnitNameTransformer2
-noName _ _ = Nothing
+product, quotient :: UnitNameTransformer2
 product = liftM2 product'
 quotient = liftM2 quotient'
 
