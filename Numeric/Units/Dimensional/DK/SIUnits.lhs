@@ -121,10 +121,10 @@ quantities. In order to convert between the 'DiffTime' data type
 in the 'Data.Time' library and 'Time' quantities we provide the
 functions 'fromDiffTime' and 'toDiffTime'.
 
- fromDiffTime :: (Fractional a) => DiffTime -> Time a
- fromDiffTime = (* second) . Prelude.fromRational . toRational
- toDiffTime :: (Real a, Fractional a) => Time a -> DiffTime
- toDiffTime = Prelude.fromRational . toRational . (/ second)
+> fromDiffTime :: (Fractional a) => DiffTime -> Time a
+> fromDiffTime = (* second) . dimensionless . Prelude.fromRational . toRational
+> toDiffTime :: (Real a, Fractional a) => Time a -> DiffTime
+> toDiffTime = Prelude.fromRational . toRational . (/~ second)
 
 
 = SI derived units (section 4.2) =
@@ -195,10 +195,10 @@ The function 'fromDegreeCelsiusAbsolute' should be used in lieu of
 'toDegreeCelsiusAbsolute' should be used in lieu of "/~ degreeCelsius"
 when working with absolute temperatures.
 
- fromDegreeCelsiusAbsolute :: Fractional a => a -> ThermodynamicTemperature a
- fromDegreeCelsiusAbsolute x = (dimensionless x) * degreeCelsius + 273.15 * degreeCelsius
- toDegreeCelsiusAbsolute :: Fractional a => ThermodynamicTemperature a -> a
- toDegreeCelsiusAbsolute x = ((dimensionless x) - 273.15 * degreeCelsius) / degreeCelsius
+> fromDegreeCelsiusAbsolute :: Fractional a => a -> ThermodynamicTemperature a
+> fromDegreeCelsiusAbsolute x = (dimensionless x) * degreeCelsius + (dimensionless 273.15) * degreeCelsius
+> toDegreeCelsiusAbsolute :: Fractional a => ThermodynamicTemperature a -> a
+> toDegreeCelsiusAbsolute x = (x - (dimensionless 273.15 * degreeCelsius)) /~ degreeCelsius
 
 
 == Table 3b ==
