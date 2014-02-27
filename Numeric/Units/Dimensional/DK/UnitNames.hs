@@ -5,7 +5,7 @@ module Numeric.Units.Dimensional.DK.UnitNames where
 import Prelude
 import Data.Monoid
 import qualified Data.Map as M
-import Control.Monad (liftM2)
+import Control.Monad (liftM, liftM2)
 
 type NameAtom = (String, String)
 
@@ -29,12 +29,19 @@ asAtom :: UnitName -> Maybe NameAtom
 asAtom (UnitName m) | [(n, 1)] <- M.toList m = Just n
                     | otherwise = Nothing
 
-type UnitNameTransformer = Maybe UnitName -> Maybe UnitName -> Maybe UnitName
+type UnitNameTransformer = Maybe UnitName -> Maybe UnitName
+type UnitNameTransformer2 = Maybe UnitName -> Maybe UnitName -> Maybe UnitName
 
-noName, product, quotient :: UnitNameTransformer
+toPower :: Int -> UnitNameTransformer
+toPower p = liftM $ toPower' p
+
+noName, product, quotient :: UnitNameTransformer2
 noName _ _ = Nothing
 product = liftM2 product'
 quotient = liftM2 quotient'
+
+toPower' :: Int -> UnitName -> UnitName
+toPower' p (UnitName m) = UnitName $ M.filter (/= 0) $ M.map (* p) m
 
 product' :: UnitName -> UnitName -> UnitName
 product' (UnitName m1) (UnitName m2) = UnitName $ M.filter (/= 0) $ M.unionWith (+) m1 m2
@@ -49,12 +56,12 @@ instance Show UnitName where
   show = fullName
 
 abbreviation :: UnitName -> String
-abbreviation (UnitName m) = unwords $ map (raiseToPower fst) $ M.toList m
+abbreviation (UnitName m) = unwords $ map (showPower fst) $ M.toList m
 
 fullName :: UnitName -> String
-fullName (UnitName m) = unwords $ map (raiseToPower snd) $ M.toList m
+fullName (UnitName m) = unwords $ map (showPower snd) $ M.toList m
 
-raiseToPower :: ((String,String) -> String) -> ((String, String), Int) -> String
-raiseToPower extract (n, 0) = ""
-raiseToPower extract (n, 1) = extract n
-raiseToPower extract (n, p) = (extract n) ++ "^" ++ (show p)
+showPower :: ((String,String) -> String) -> ((String, String), Int) -> String
+showPower extract (n, 0) = ""
+showPower extract (n, 1) = extract n
+showPower extract (n, p) = (extract n) ++ "^" ++ (show p)

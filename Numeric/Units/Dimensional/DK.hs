@@ -92,7 +92,7 @@ import Data.Proxy (Proxy(..))
 import Data.Foldable (Foldable(foldr, foldl'))
 import Data.Monoid (Monoid(..))
 import qualified Numeric.Units.Dimensional.DK.UnitNames as Name
-import Numeric.Units.Dimensional.DK.UnitNames (NameAtom, UnitName, UnitNameTransformer)
+import Numeric.Units.Dimensional.DK.UnitNames (NameAtom, UnitName, UnitNameTransformer, UnitNameTransformer2)
 
 {-
 We will reuse the operators and function names from the Prelude.
@@ -103,7 +103,7 @@ as the Prelude.
 infixr 8  ^, ^+, ^/, **
 infixl 7  *, /
 infixl 6  +, -
-infixl 7 /~
+infixl 7  /~
 
 {-
 = Dimensional =
@@ -294,16 +294,17 @@ forward. In particular the type signatures are much simplified.
 Multiplication, division and powers apply to both units and quantities.
 -}
 
-liftUntyped :: (Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1) => (v -> v) -> (v1 d1 v) -> (v2 d2 v)
-liftUntyped f x = let x' = extractValue x
-                      n' = extractName x
-                   in injectValue n' (f x')
+liftUntyped :: (Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1) => (v -> v) -> UnitNameTransformer -> (v1 d1 v) -> (v2 d2 v)
+liftUntyped f nt x = let x' = extractValue x
+                         n = extractName x
+                         n' = nt n
+                      in injectValue n' (f x')
 
 liftUntypedQ :: (Dimensional v1) => (v -> v) -> v1 d1 v -> Quantity d2 v
 liftUntypedQ f x = let x' = extractValue x
                     in Quantity (f x')
 
-liftUntyped2 :: (Dimensional v1, Dimensional v2, Dimensional v3, v3 ~ DimensionalCombination v1 v2) => (v -> v -> v) -> UnitNameTransformer -> v1 d1 v -> v2 d2 v -> v3 d3 v
+liftUntyped2 :: (Dimensional v1, Dimensional v2, Dimensional v3, v3 ~ DimensionalCombination v1 v2) => (v -> v -> v) -> UnitNameTransformer2 -> v1 d1 v -> v2 d2 v -> v3 d3 v
 liftUntyped2 f nt x1 x2 = let x1' = extractValue x1
                               x2' = extractValue x2
                               n1 = extractName x1
@@ -325,7 +326,8 @@ liftUntyped2Q f x1 x2 = let x1' = extractValue x1
 (^) :: (ToInteger (NT i), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Fractional v)
     => v1 d1 v -> NT i -> v2 (d1 ^ i) v
 x ^ n = let n' = (toNum n) :: Integer
-         in liftUntyped (Prelude.^^ n') x
+            n'' = (toNum n) :: Int
+         in liftUntyped (Prelude.^^ n') (Name.toPower n'') x
 
 {-
 In the unlikely case someone needs to use this library with
@@ -336,7 +338,8 @@ non-fractional numbers we provide the alternative power operator
 (^+) :: (ToInteger (NP n), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Num v)
      => v1 d1 v -> NP n -> v2 (d1 ^ P n) v
 x ^+ n = let n' = (toNum n) :: Integer
-          in liftUntyped (Prelude.^ n') x
+             n'' = (toNum n) :: Int
+          in liftUntyped (Prelude.^ n') (Name.toPower n'') x
 
 {-
 A special case is that dimensionless quantities are not restricted
@@ -373,20 +376,20 @@ Roots of arbitrary (integral) degree. Appears to occasionally be useful
 for units as well as quantities.
 -}
 
-nroot :: (ToInteger (NT n), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Floating v)
-      => NT n -> v1 d v -> v2 (Root d n) v
+nroot :: (ToInteger (NT n), Dimensional v1, Floating v)
+      => NT n -> v1 d v -> Quantity (Root d n) v
 nroot n = let n' = 1 Prelude./ toNum n
-           in liftUntyped (Prelude.** n')
+           in liftUntypedQ (Prelude.** n')
 
 {-
 We provide short-hands for the square and cubic roots.
 -}
 
-sqrt :: (Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Floating v)
-     => v1 d v -> v2 (Root d Pos2) v
+sqrt :: (Dimensional v1, Floating v)
+     => v1 d v -> Quantity (Root d Pos2) v
 sqrt = nroot pos2
-cbrt :: (Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Floating v)
-     => v1 d v -> v2 (Root d Pos3) v
+cbrt :: (Dimensional v1, Floating v)
+     => v1 d v -> Quantity (Root d Pos3) v
 cbrt = nroot pos3
 
 {-
@@ -394,8 +397,8 @@ We also provide an operator alternative to nroot for those that
 prefer such.
 -}
 
-(^/) :: (ToInteger (NT n), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Floating v)
-     => v1 d v -> NT n -> v2 (Root d n) v
+(^/) :: (ToInteger (NT n), Dimensional v1, Floating v)
+     => v1 d v -> NT n -> Quantity (Root d n) v
 (^/) = flip nroot
 
 {-
