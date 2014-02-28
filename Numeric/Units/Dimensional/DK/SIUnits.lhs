@@ -23,6 +23,7 @@ referenced are from [1] unless otherwise specified.
 > -}
 
 > {-# LANGUAGE DataKinds #-}
+> {-# LANGUAGE NumDecimals #-}
 > module Numeric.Units.Dimensional.DK.SIUnits where
 
 > import Numeric.Units.Dimensional.DK
@@ -48,17 +49,17 @@ We define all SI prefixes from Table 5. Multiples first.
 
 > deka, deca, hecto, kilo, mega, giga, tera, peta, exa, zetta, yotta
 >   :: Num v => Unit Atomic d v -> Unit Composite d v
-> deka  = prefix ("da", "deca")  (asNum 1e1) -- International English.
-> deca  = deka      -- American English.
-> hecto = prefix ("ha", "hecto") (asNum 1e2)
-> kilo  = prefix ("k", "kilo")   (asNum 1e3)
-> mega  = prefix ("M", "mega")   (asNum 1e6)
-> giga  = prefix ("G", "giga")   (asNum 1e9)
-> tera  = prefix ("T", "tera")   (asNum 1e12)
-> peta  = prefix ("P", "peta")   (asNum 1e15)
-> exa   = prefix ("E", "eta")    (asNum 1e18)
-> zetta = prefix ("Z", "zetta")  (asNum 1e21)
-> yotta = prefix ("Y", "yotta")  (asNum 1e24)
+> deka  = prefix ("da", "deca")  1e1 -- International English.
+> deca  = deka                       -- American English.
+> hecto = prefix ("ha", "hecto") 1e2
+> kilo  = prefix ("k", "kilo")   1e3
+> mega  = prefix ("M", "mega")   1e6
+> giga  = prefix ("G", "giga")   1e9
+> tera  = prefix ("T", "tera")   1e12
+> peta  = prefix ("P", "peta")   1e15
+> exa   = prefix ("E", "eta")    1e18
+> zetta = prefix ("Z", "zetta")  1e21
+> yotta = prefix ("Y", "yotta")  1e24
 
 Then the submultiples.
 
