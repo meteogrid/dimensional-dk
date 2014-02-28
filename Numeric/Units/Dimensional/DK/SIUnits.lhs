@@ -44,9 +44,6 @@ unit.
 
 We define all SI prefixes from Table 5. Multiples first.
 
-> asNum :: (Num a) => Prelude.Rational -> a
-> asNum x = fromInteger $ floor x
-
 > deka, deca, hecto, kilo, mega, giga, tera, peta, exa, zetta, yotta
 >   :: Num v => Unit Atomic d v -> Unit Composite d v
 > deka  = prefix ("da", "deca")  1e1 -- International English.
