@@ -505,7 +505,7 @@ asinh = fmap Prelude.asinh
 acosh = fmap Prelude.acosh
 atanh = fmap Prelude.atanh
 
-(**) :: (Dimensional v1, Dimensional v2, Floating v) => v1 DOne v -> v2 DOne v -> Dimensionless v
+(**) :: (Floating v) => Dimensionless v -> Dimensionless v -> Dimensionless v
 (**) = liftUntyped2Q (Prelude.**)
 
 {-
@@ -513,7 +513,7 @@ For 'atan2' the operands need not be dimensionless but they must be
 of the same type. The result will of course always be dimensionless.
 -}
 
-atan2 :: (Dimensional v1, Dimensional v2, RealFloat v) => v1 d v -> v2 d v -> Dimensionless v
+atan2 :: (RealFloat v) => Quantity d v -> Quantity d v -> Dimensionless v
 atan2 = liftUntyped2Q Prelude.atan2
 
 {-
