@@ -71,7 +71,7 @@ and implementation.
 -}
 
 module Numeric.Units.Dimensional.DK
-  ( (^), (^+), (^/), (**), (*), (/), (+), (-), (/~),
+  ( (^), (^+), (^/), (**), (*), (/), (+), (-), (*~), (/~),
     Dimensional,
     Unit(..), Quantity, Dimension (Dim), Atomicity(..),
     DOne, DLength, DMass, DTime, DElectricCurrent, DThermodynamicTemperature, DAmountOfSubstance, DLuminousIntensity,
@@ -116,7 +116,7 @@ as the Prelude.
 infixr 8  ^, ^+, ^/, **
 infixl 7  *, /
 infixl 6  +, -
-infixl 7  /~
+infixl 7  *~, /~
 
 {-
 = Dimensional =
@@ -555,6 +555,9 @@ dimensionless = Quantity
 
 unD :: (Dimensional v1) => v1 DOne v -> v
 unD = extractValue
+
+(*~) :: (Fractional v, Dimensional v1, DimensionalCombination Quantity v1 ~ Quantity) => v -> v1 d v -> Quantity d v
+v *~ q = (dimensionless v) * q
 
 (/~) :: (Dimensional v1, Dimensional v2, Dimensional (DimensionalCombination v1 v2), Fractional v) => v1 d v -> v2 d v -> v
 x /~ y = unD $ x / y

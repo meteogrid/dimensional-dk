@@ -78,7 +78,7 @@ Some US customary (that is, inch-pound) units.
 > mil  = alias ("mil", "mil") (0.001 * inch)
 > poundMass, ounce :: Fractional a => Unit Atomic DMass a
 > poundMass = alias ("lbm", "pound mass") (0.45359237 * (kilo gram))
-> ounce     = alias ("oz", "ounce") (dimensionless (1 Prelude./ 16) * poundMass)
+> ounce     = alias ("oz", "ounce") ((1 Prelude./ 16) *~ poundMass)
 
 > poundForce :: Fractional a => Unit Atomic DForce a
 > poundForce = alias ("lbf", "pound force") (poundMass * gee)  -- 4.4482 N
@@ -121,9 +121,9 @@ This aligns well with my needs so I'm happy to oblige. We define
 the year in terms of seconds in order to avoid a 'Fractional'
 constraint, and also provide a Julian century.
 
-> year, century :: Num a => Unit Atomic DTime a
-> year    = alias ("a", "year") (dimensionless 31557600 * second)
-> century = alias ("c", "century") (dimensionless 100 * year)
+> year, century :: Fractional a => Unit Atomic DTime a
+> year    = alias ("a", "year") (31557600 *~ second)
+> century = alias ("c", "century") (100 *~ year)
 
 
 = Pressure units =
@@ -168,7 +168,7 @@ One torr (symbol: Torr) is defined as 1/760 atm, which is approximately equal
 to 1 mmHg.
 
 > torr :: (Fractional a) => Unit Atomic DPressure a
-> torr = alias ("torr", "torr") (dimensionless (1 Prelude./ 760) * atmosphere)
+> torr = alias ("torr", "torr") ((1 Prelude./ 760) *~ atmosphere)
 
 
 = Radiation =
@@ -191,11 +191,11 @@ Per http://en.wikipedia.org/wiki/Imperial_units and http://en.wikipedia.org/wiki
 >                 imperialGill, imperialFluidOunce
 >                 :: (Fractional a) => Unit Atomic DVolume a
 > imperialGallon = alias ("gal", "gallon") (4.54609 * liter)
-> imperialQuart  = alias ("qt", "quart") (dimensionless (1 Prelude./ 4) * imperialGallon)
-> imperialPint   = alias ("pt", "pint") (dimensionless (1 Prelude./ 8) * imperialGallon)
-> imperialCup    = alias ("cup", "cup") (0.5 * imperialPint) -- does this unit actually exist except by analogy with the US system? not in wiki table
-> imperialGill   = alias ("gi", "gill") (dimensionless (1 Prelude./ 4) * imperialPint)
-> imperialFluidOunce = alias ("fl oz", "fluid ounce") (dimensionless (1 Prelude./ 20) * imperialPint)
+> imperialQuart  = alias ("qt", "quart") ((1 Prelude./ 4) *~ imperialGallon)
+> imperialPint   = alias ("pt", "pint") ((1 Prelude./ 8) *~ imperialGallon)
+> imperialCup    = alias ("cup", "cup") ((1 Prelude./ 2) *~ imperialPint) -- does this unit actually exist except by analogy with the US system? not in wiki table
+> imperialGill   = alias ("gi", "gill") ((1 Prelude./ 4) *~ imperialPint)
+> imperialFluidOunce = alias ("fl oz", "fluid ounce") ((1 Prelude./ 20) *~ imperialPint)
 
 = US Customary Volumes =
 
@@ -203,12 +203,12 @@ Per http://www.nist.gov/pml/wmd/pubs/upload/2012-hb44-final.pdf page 452 and htt
 Note that there exist rarely-used "dry" variants of units with overlapping names.
 
 > usGallon, usQuart, usPint, usCup, usGill, usFluidOunce :: (Fractional a) => Unit Atomic DVolume a
-> usGallon = alias ("gal", "gallon") (dimensionless 231 * (cubic inch))
-> usQuart = alias ("qt", "quart") (dimensionless (1 Prelude./ 4) * usGallon)
-> usPint = alias ("pt", "pint") (dimensionless (1 Prelude./ 8) * usGallon)
-> usCup = alias ("cup", "cup") (dimensionless (1 Prelude./ 2) * usPint)
-> usGill = alias ("gi", "gill") (dimensionless (1 Prelude./ 4) * usPint)
-> usFluidOunce = alias ("fl oz", "fluid ounce") (dimensionless (1 Prelude./ 16) * usPint) -- sic, does not match factor used in imperial system
+> usGallon = alias ("gal", "gallon") (231 *~ (cubic inch))
+> usQuart = alias ("qt", "quart") ((1 Prelude./ 4) *~ usGallon)
+> usPint = alias ("pt", "pint") ((1 Prelude./ 8) *~ usGallon)
+> usCup = alias ("cup", "cup") ((1 Prelude./ 2) *~ usPint)
+> usGill = alias ("gi", "gill") ((1 Prelude./ 4) *~ usPint)
+> usFluidOunce = alias ("fl oz", "fluid ounce") ((1 Prelude./ 16) *~ usPint) -- sic, does not match factor used in imperial system
 
 = References =
 
