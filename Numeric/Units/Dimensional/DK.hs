@@ -76,21 +76,22 @@ module Numeric.Units.Dimensional.DK
     Unit(..), Quantity, Dimension (Dim), Atomicity(..),
     DOne, DLength, DMass, DTime, DElectricCurrent, DThermodynamicTemperature, DAmountOfSubstance, DLuminousIntensity,
     Dimensionless, Length, Mass, Time, ElectricCurrent, ThermodynamicTemperature, AmountOfSubstance, LuminousIntensity,
-    type (*), type (/), type (^), Root, Inverse,
+    type (*), type (/), type (^), Root, Recip,
     negate, abs, nroot, sqrt, cbrt,
     (*~~), (/~~), sum, mean, dimensionlessLength,
     exp, log, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh, atan2,
     one, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, pi, tau,
     -- TODO: siUnit, 
-    Dimension' (Dim'), KnownDimension, toSIBasis, getSIBasis, 
-    prefix, alias, dimensionless, fromRational
+    Dimension' (Dim'), KnownDimension, toSIBasis, getSIBasis,
+    prefix, alias, dimensionless, fromRational,
+    dmap, changeRep
   )
   where
 
 import Prelude
-  ( Show, Eq, Ord, Enum, Num, Fractional, Floating, RealFloat, Functor, fmap
+  ( Show, Eq, Ord, Enum, Num, Fractional, Floating, Real, RealFloat, Functor, fmap
   , (.), flip, show, (++), undefined, otherwise, (==), String, unwords
-  , map, null, Integer, Int, ($), zipWith, uncurry, concat
+  , map, null, Integer, Int, ($), zipWith, uncurry, concat, realToFrac
   )
 import qualified Prelude
 import Data.List (genericLength)
@@ -261,7 +262,7 @@ type family (a::Dimension) / (d::Dimension) where
   (Dim l  m  t  i  th  n  j) / (Dim l' m' t' i' th' n' j')
     = Dim (l - l') (m - m') (t - t') (i - i') (th - th') (n - n') (j - j')
 
-type Inverse (d :: Dimension) = DOne / d
+type Recip (d :: Dimension) = DOne / d
 
 {-
 We could provide the 'Mul' and 'Div' classes with full functional
@@ -477,7 +478,7 @@ We provide this freedom by making 'Dimensionless' an instance of
 -}
 
 instance Functor Dimensionless where
-  fmap f (Quantity x) = Quantity (f x)
+  fmap = dmap
 
 {-
 We continue by defining elementary functions on 'Dimensionless'
@@ -584,6 +585,21 @@ feel free to review http://www.thepimanifesto.com).
 pi, tau :: Floating a => Dimensionless a
 pi = dimensionless Prelude.pi
 tau = _2 * pi
+
+{-
+
+= Conversion Between Number Representations =
+
+We provide a convenience function for converting numerical types while retaining dimensional information.
+Another flavor works with a user-supplied conversion function.
+
+-}
+
+dmap :: (a -> b) -> Dimensional v d a -> Dimensional v d b
+dmap f (Dimensional x) = Dimensional (f x)
+
+changeRep :: (Real a, Fractional b) => Dimensional v d a -> Dimensional v d b
+changeRep = dmap realToFrac
 
 {-
 

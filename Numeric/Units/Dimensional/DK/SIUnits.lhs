@@ -29,7 +29,6 @@ referenced are from [1] unless otherwise specified.
 > import Numeric.Units.Dimensional.DK
 > import Numeric.Units.Dimensional.DK.Quantities
 > import Numeric.NumType.DK ( neg1, neg2, pos2, pos3 )
-> import Data.Time.Clock (DiffTime)
 > import Prelude ( (.), Num, Real (toRational), fromInteger, ($), floor, Fractional(fromRational), Floating, recip )
 > import qualified Prelude
 > import Numeric.Units.Dimensional.DK.UnitNames (atomic)
@@ -118,6 +117,7 @@ quantities. In order to convert between the 'DiffTime' data type
 in the 'Data.Time' library and 'Time' quantities we provide the
 functions 'fromDiffTime' and 'toDiffTime'.
 
+> {-# DEPRECATED fromDiffTime, toDiffTime "These will probably go away." #-}
 > fromDiffTime :: (Fractional a) => DiffTime -> Time a
 > fromDiffTime = (* second) . dimensionless . Prelude.fromRational . toRational
 > toDiffTime :: (Real a, Fractional a) => Time a -> DiffTime
