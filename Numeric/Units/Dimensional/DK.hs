@@ -57,6 +57,7 @@ Clients probably will want to use the NegativeLiterals extension.
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE NumDecimals #-}
 
 {- |
    Copyright  : Copyright (C) 2006-2014 Bjorn Buckwalter
@@ -84,7 +85,9 @@ module Numeric.Units.Dimensional.DK
     -- TODO: siUnit, 
     Dimension' (Dim'), KnownDimension, toSIBasis, getSIBasis,
     prefix, alias, dimensionless, unD,
-    dmap, changeRep
+    dmap, changeRep,
+    deka, deca, hecto, kilo, mega, giga, tera, peta, exa, zetta, yotta,
+    deci, centi, milli, micro, nano, pico, femto, atto, zepto, yocto
   )
   where
 
@@ -528,17 +531,68 @@ constructor.
 -- siUnit = Dimensional 1
 
 {-
-The only unit we will define in this module is 'one'. The unit one
-has dimension one and is the base unit of dimensionless values. As
-detailed in 7.10 "Values of quantities expressed simply as numbers:
+The unit one has dimension one and is the base unit of dimensionless values.
+As detailed in 7.10 "Values of quantities expressed simply as numbers:
 the unit one, symbol 1" of [1] the unit one generally does not
 appear in expressions. However, for us it is necessary to use 'one'
-as we would any other unit to perform the "boxing" of dimensionless
-values.
+as we would any other unit to perform the "boxing" of dimensionless values.
 -}
 
 one :: Num a => Unit Composite DOne a
 one = Unit Name.nameOne 1
+
+{-
+
+= SI prefixes (section 4.4) =
+
+Prefixes are used to form decimal multiples and submultiples of SI
+Units as described in section 4.4. We will define the SI prefixes
+in terms of the 'prefix' function which applies a scale factor to a
+unit.
+
+We define all SI prefixes from Table 5. Multiples first.
+
+-}
+
+deka, deca, hecto, kilo, mega, giga, tera, peta, exa, zetta, yotta
+  :: Num v => Unit Atomic d v -> Unit Composite d v
+deka  = prefix ("da", "deca")  1e1 -- International English.
+deca  = deka                       -- American English.
+hecto = prefix ("ha", "hecto") 1e2
+kilo  = prefix ("k", "kilo")   1e3
+mega  = prefix ("M", "mega")   1e6
+giga  = prefix ("G", "giga")   1e9
+tera  = prefix ("T", "tera")   1e12
+peta  = prefix ("P", "peta")   1e15
+exa   = prefix ("E", "eta")    1e18
+zetta = prefix ("Z", "zetta")  1e21
+yotta = prefix ("Y", "yotta")  1e24
+
+{-
+
+Then the submultiples.
+
+-}
+
+deci, centi, milli, micro, nano, pico, femto, atto, zepto, yocto
+  :: Fractional v => Unit Atomic d v -> Unit Composite d v
+deci  = prefix ("d", "deci")  1e-1
+centi = prefix ("c", "centi") 1e-2
+milli = prefix ("m", "milli") 1e-3
+micro = prefix ("μ", "micro") 1e-6
+nano  = prefix ("n", "nano")  1e-9
+pico  = prefix ("p", "pico")  1e-12
+femto = prefix ("f", "femto") 1e-15
+atto  = prefix ("a", "atto")  1e-18
+zepto = prefix ("z", "zepto") 1e-21
+yocto = prefix ("y", "yocto") 1e-24
+
+{-
+
+By defining SI prefixes as functions applied to a 'Unit' we satisfy
+section 6.2.6 "Unacceptability of stand-alone prefixes".
+
+-}
 
 {-
 For convenience we define some constants for small integer values
