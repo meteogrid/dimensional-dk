@@ -25,12 +25,10 @@ otherwise specified.
 > -}
 
 > {-# LANGUAGE DataKinds #-}
-> {-# LANGUAGE RebindableSyntax #-}
 > module Numeric.Units.Dimensional.DK.NonSI where
 
 > import Numeric.Units.Dimensional.DK.Prelude
 > import qualified Prelude
-> import Prelude (fromInteger)
 
 
 = Neper, bel, shannon and the like =
@@ -51,9 +49,9 @@ uncertainity of 0.00000049e-19 J and the unified atomic mass unit
 had a combined uncertainty of 0.0000010e-27 kg.
 
 > electronVolt :: Fractional a => Unit Atomic DEnergy a
-> electronVolt = alias ("eV", "electron volt") (1.60217733e-19 * joule)
+> electronVolt = alias ("eV", "electron volt") (1.60217733e-19 *~ joule)
 > unifiedAtomicMassUnit :: Fractional a => Unit Atomic DMass a
-> unifiedAtomicMassUnit = alias ("u", "atomic mass unit") (1.6605402e-27 * (kilo gram))
+> unifiedAtomicMassUnit = alias ("u", "atomic mass unit") (1.6605402e-27 *~ (kilo gram))
 
 
 = Standard gravity =
@@ -65,7 +63,7 @@ local values of acceleration due to gravity will differ from the standard
 gravity). I.e. g_0 = 1 gee.
 
 > gee :: Fractional a => Unit Atomic DAcceleration a
-> gee = alias ("g", "gee") (9.80665 * meter / second ^ pos2)
+> gee = alias ("g", "gee") (9.80665 *~ meter / second ^ pos2)
 
 
 = Inch-pound units =
@@ -73,11 +71,11 @@ gravity). I.e. g_0 = 1 gee.
 Some US customary (that is, inch-pound) units.
 
 > inch, foot, mil :: Fractional a => Unit Atomic DLength a
-> inch = alias ("in", "inch") (2.54 * (centi meter))
-> foot = alias ("ft", "foot") (12.0 * inch) -- 0.3048 m
-> mil  = alias ("mil", "mil") (0.001 * inch)
+> inch = alias ("in", "inch") (2.54 *~ (centi meter))
+> foot = alias ("ft", "foot") (12.0 *~ inch) -- 0.3048 m
+> mil  = alias ("mil", "mil") (0.001 *~ inch)
 > poundMass, ounce :: Fractional a => Unit Atomic DMass a
-> poundMass = alias ("lbm", "pound mass") (0.45359237 * (kilo gram))
+> poundMass = alias ("lbm", "pound mass") (0.45359237 *~ (kilo gram))
 > ounce     = alias ("oz", "ounce") ((1 Prelude./ 16) *~ poundMass)
 
 > poundForce :: Fractional a => Unit Atomic DForce a
@@ -97,19 +95,19 @@ Pounds of force per square inch.
 = Various other (non inch-pound) units =
 
 > yard, mile, nauticalMile :: (Fractional a) => Unit Atomic DLength a
-> yard = alias ("yd", "yard") (3.0 * foot)
-> mile = alias ("mi", "mile") (1760.0 * yard)
-> nauticalMile = alias ("nm", "nautical mile") (1852.0 * meter)
+> yard = alias ("yd", "yard") (3.0 *~ foot)
+> mile = alias ("mi", "mile") (1760.0 *~ yard)
+> nauticalMile = alias ("nm", "nautical mile") (1852.0 *~ meter)
 > knot :: (Fractional a) => Unit Atomic DVelocity a
 > knot = alias ("kt", "knot") (nauticalMile / hour)
 > revolution :: (Floating a) => Unit Atomic DOne a
 > revolution = alias ("r", "revolution") (tau * radian)
 > solid :: (Floating a) => Unit Atomic DOne a
-> solid = alias ("solid", "solid") (4.0 * pi * steradian)
+> solid = alias ("solid", "solid") (4.0 *~ pi * steradian)
 > teaspoon :: (Fractional a) => Unit Atomic DVolume a
-> teaspoon = alias ("tsp", "teaspoon") (5.0 * (milli liter))
+> teaspoon = alias ("tsp", "teaspoon") (5.0 *~ (milli liter))
 > acre :: (Fractional a) => Unit Atomic DArea a
-> acre = alias ("acre", "acre") (43560.0 * (square foot))
+> acre = alias ("acre", "acre") (43560.0 *~ (square foot))
 
 The IAU recommends[2] that:
 
@@ -131,7 +129,7 @@ constraint, and also provide a Julian century.
 Psi was defined earlier.
 
 > bar :: (Fractional a) => Unit Atomic DPressure a
-> bar = alias ("bar", "bar") (1.0e5 * pascal)
+> bar = alias ("bar", "bar") (1.0e5 *~ pascal)
 
 From Wikipedia[3]:
 
@@ -140,7 +138,7 @@ From Wikipedia[3]:
   level.
 
 > atmosphere :: (Fractional a) => Unit Atomic DPressure a
-> atmosphere = alias ("atm", "atmosphere") (101325.0 * pascal)
+> atmosphere = alias ("atm", "atmosphere") (101325.0 *~ pascal)
 
 From Wikipedia:
 
@@ -162,7 +160,7 @@ The chosen fluid density approximately corresponds to that of mercury
 at 0 deg. Under most conditions, 1 mmHg is approximately equal to 1 torr.
 
 > mmHg :: (Fractional a) => Unit Atomic DPressure a
-> mmHg = alias ("mmHg", "millimeter of mercury") (13.5951 * gram * centi meter ^ neg3 * milli meter * gee)
+> mmHg = alias ("mmHg", "millimeter of mercury") (13.5951 *~ gram * centi meter ^ neg3 * milli meter * gee)
 
 One torr (symbol: Torr) is defined as 1/760 atm, which is approximately equal
 to 1 mmHg.
@@ -190,7 +188,7 @@ Per http://en.wikipedia.org/wiki/Imperial_units and http://en.wikipedia.org/wiki
 > imperialGallon, imperialQuart, imperialPint, imperialCup,
 >                 imperialGill, imperialFluidOunce
 >                 :: (Fractional a) => Unit Atomic DVolume a
-> imperialGallon = alias ("gal", "gallon") (4.54609 * liter)
+> imperialGallon = alias ("gal", "gallon") (4.54609 *~ liter)
 > imperialQuart  = alias ("qt", "quart") ((1 Prelude./ 4) *~ imperialGallon)
 > imperialPint   = alias ("pt", "pint") ((1 Prelude./ 8) *~ imperialGallon)
 > imperialCup    = alias ("cup", "cup") ((1 Prelude./ 2) *~ imperialPint) -- does this unit actually exist except by analogy with the US system? not in wiki table

@@ -83,7 +83,7 @@ module Numeric.Units.Dimensional.DK
     one, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, pi, tau,
     -- TODO: siUnit, 
     Dimension' (Dim'), KnownDimension, toSIBasis, getSIBasis,
-    prefix, alias, dimensionless, fromRational,
+    prefix, alias, dimensionless, unD,
     dmap, changeRep
   )
   where
@@ -565,9 +565,6 @@ v *~ q = (dimensionless v) * q
 
 (/~) :: (Dimensional v1, Dimensional v2, Dimensional (DimensionalCombination v1 v2), Fractional v) => v1 d v -> v2 d v -> v
 x /~ y = unD $ x / y
-
-fromRational :: (Fractional a) => Prelude.Rational -> Quantity DOne a
-fromRational = dimensionless . (Prelude.fromRational)
 
 _1, _2, _3, _4, _5, _6, _7, _8, _9 :: (Num a) => Dimensionless a
 _1 = dimensionless 1
