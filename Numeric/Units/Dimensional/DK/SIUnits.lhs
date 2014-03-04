@@ -107,22 +107,6 @@ The drawback is that we are forced to use 'Fractional'.
 > candela :: Num v => Unit Atomic DLuminousIntensity v
 > candela = Unit (atomic ("cd", "candela")) 1
 
-= DiffTime conversion =
-
-It is not within the scope of this library to handle the complex
-task of date and time arithmetic. It is recommended to use the
-'Data.Time' library for handling dates and using 'Time' quantities
-only when time differences are involved in calculations with other
-quantities. In order to convert between the 'DiffTime' data type
-in the 'Data.Time' library and 'Time' quantities we provide the
-functions 'fromDiffTime' and 'toDiffTime'.
-
-> {-# DEPRECATED fromDiffTime, toDiffTime "These will probably go away." #-}
-> fromDiffTime :: (Fractional a) => DiffTime -> Time a
-> fromDiffTime = (* second) . dimensionless . Prelude.fromRational . toRational
-> toDiffTime :: (Real a, Fractional a) => Time a -> DiffTime
-> toDiffTime = Prelude.fromRational . toRational . (/~ second)
-
 
 = SI derived units (section 4.2) =
 

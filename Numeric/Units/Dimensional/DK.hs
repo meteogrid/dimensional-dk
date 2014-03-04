@@ -146,17 +146,20 @@ class Dimensional (var :: Dimension -> * -> *) where
   extractValue :: var d v -> v
   extractName :: var d v -> Maybe UnitName
   injectValue :: (Maybe UnitName) -> v -> var d v
+  dmap :: (v1 -> v2) -> var d v1 -> var d v2
 
 instance Dimensional Quantity where
   extractValue (Quantity x) = x
   extractName _ = Nothing
   injectValue _ x = Quantity x
+  dmap f (Quantity x) = Quantity (f x)
 
 instance Dimensional (Unit a) where
   extractValue (Unit _ x) = x
   extractName (Unit n _) = Just n
   injectValue (Just n) x = Unit n x
   injectValue _ x = Prelude.error "Shouldn't be reachable. Needed to name a quantity."
+  dmap f (Unit n x) = Unit n (f x)
 
 type family DimensionalCombination (v1 :: Dimension -> * -> *) (v2 :: Dimension -> * -> *) :: Dimension -> * -> * where
   DimensionalCombination (Quantity) (Quantity) = Quantity
@@ -595,10 +598,7 @@ Another flavor works with a user-supplied conversion function.
 
 -}
 
-dmap :: (a -> b) -> Dimensional v d a -> Dimensional v d b
-dmap f (Dimensional x) = Dimensional (f x)
-
-changeRep :: (Real a, Fractional b) => Dimensional v d a -> Dimensional v d b
+changeRep :: (Real a, Fractional b, Dimensional v) => v d a -> v d b
 changeRep = dmap realToFrac
 
 {-
