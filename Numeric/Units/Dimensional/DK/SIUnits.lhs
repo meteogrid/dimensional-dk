@@ -33,38 +33,6 @@ referenced are from [1] unless otherwise specified.
 > import Numeric.Units.Dimensional.DK.UnitNames (atomic)
 
 
-= SI base units (section 4.1) =
-
-Now we will define the SI base unitsi from section 4.1. To avoid a
-myriad of one-letter functions that would doubtlessly cause clashes
-and frustration in users' code we spell out all unit names in full,
-as we did for prefixes. We also elect to spell the unit names in
-singular form, as allowed by section 9.7 "Other spelling conventions".
-
-We define the SI base units in the order of table 1.
-
-> metre, meter :: Num v => Unit Atomic DLength v
-> metre = Unit (atomic ("m", "meter")) 1 -- International English.
-> meter = metre         -- American English.
-
-For mass the SI base unit is kilogram. For sensible prefixes we
-define gram here (see section 6.2.7 "Prefixes and the kilogram").
-The drawback is that we are forced to use 'Fractional'.
-
-> gram    :: Fractional v => Unit Atomic DMass v
-> gram    = Unit (atomic ("g", "gram")) 1e-3
-> second  :: Num v => Unit Atomic DTime v
-> second  = Unit (atomic ("s", "second")) 1
-> ampere  :: Num v => Unit Atomic DElectricCurrent v
-> ampere  = Unit (atomic ("A", "ampere")) 1
-> kelvin  :: Num v => Unit Atomic DThermodynamicTemperature v
-> kelvin  = Unit (atomic ("K", "kelvin")) 1
-> mole    :: Num v => Unit Atomic DAmountOfSubstance v
-> mole    = Unit (atomic ("mol", "mole")) 1
-> candela :: Num v => Unit Atomic DLuminousIntensity v
-> candela = Unit (atomic ("cd", "candela")) 1
-
-
 = SI derived units (section 4.2) =
 
 Before defining the derived units themselves we provide type synonyms
