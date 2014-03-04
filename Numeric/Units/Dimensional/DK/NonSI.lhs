@@ -185,7 +185,7 @@ to 1 mmHg.
 
 = Imperial Volumes =
 
-Per http://en.wikipedia.org/wiki/Imperial_units.
+Per http://en.wikipedia.org/wiki/Imperial_units and http://en.wikipedia.org/wiki/Cup_(unit)#Imperial_cup.
 
 > imperialGallon, imperialQuart, imperialPint, imperialCup,
 >                 imperialGill, imperialFluidOunce
@@ -197,6 +197,18 @@ Per http://en.wikipedia.org/wiki/Imperial_units.
 > imperialGill   = alias ("gi", "gill") (dimensionless (1 Prelude./ 4) * imperialPint)
 > imperialFluidOunce = alias ("fl oz", "fluid ounce") (dimensionless (1 Prelude./ 20) * imperialPint)
 
+= US Customary Volumes =
+
+Per http://www.nist.gov/pml/wmd/pubs/upload/2012-hb44-final.pdf page 452 and http://en.wikipedia.org/wiki/United_States_customary_units#Fluid_volume
+Note that there exist rarely-used "dry" variants of units with overlapping names.
+
+> usGallon, usQuart, usPint, usCup, usGill, usFluidOunce :: (Fractional a) => Unit Atomic DVolume a
+> usGallon = alias ("gal", "gallon") (dimensionless 231 * (cubic inch))
+> usQuart = alias ("qt", "quart") (dimensionless (1 Prelude./ 4) * usGallon)
+> usPint = alias ("pt", "pint") (dimensionless (1 Prelude./ 8) * usGallon)
+> usCup = alias ("cup", "cup") (dimensionless (1 Prelude./ 2) * usPint)
+> usGill = alias ("gi", "gill") (dimensionless (1 Prelude./ 4) * usPint)
+> usFluidOunce = alias ("fl oz", "fluid ounce") (dimensionless (1 Prelude./ 16) * usPint) -- sic, does not match factor used in imperial system
 
 = References =
 

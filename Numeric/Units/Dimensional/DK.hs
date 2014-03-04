@@ -71,21 +71,34 @@ and implementation.
 -}
 
 module Numeric.Units.Dimensional.DK
-      -- TODO discriminate exports, in particular Variants and Dims.
+  ( (^), (^+), (^/), (**), (*), (/), (+), (-), (/~),
+    Dimensional,
+    Unit(..), Quantity, Dimension (Dim), Atomicity(..),
+    DOne, DLength, DMass, DTime, DElectricCurrent, DThermodynamicTemperature, DAmountOfSubstance, DLuminousIntensity,
+    Dimensionless, Length, Mass, Time, ElectricCurrent, ThermodynamicTemperature, AmountOfSubstance, LuminousIntensity,
+    type (*), type (/), type (^), Root, Inverse,
+    negate, abs, nroot, sqrt, cbrt,
+    (*~~), (/~~), sum, mean, dimensionlessLength,
+    exp, log, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh, atan2,
+    one, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, pi, tau,
+    -- TODO: siUnit, 
+    Dimension' (Dim'), KnownDimension, toSIBasis, getSIBasis, 
+    prefix, alias, dimensionless, fromRational
+  )
   where
 
 import Prelude
   ( Show, Eq, Ord, Enum, Num, Fractional, Floating, RealFloat, Functor, fmap
   , (.), flip, show, (++), undefined, otherwise, (==), String, unwords
-  , map, null, Integer, Int, ($), zipWith, uncurry
+  , map, null, Integer, Int, ($), zipWith, uncurry, concat
   )
 import qualified Prelude
 import Data.List (genericLength)
 import Data.Maybe (Maybe (Just, Nothing), catMaybes)
 import Numeric.NumType.DK
-  ( NumType (P), (+)(), (-)()
-  , NT, NP, Zero, Pos1, Pos2, pos2, Pos3, pos3
-  , ToInteger, toNum
+  ( NumType (Zero, Pos1Plus), (+)(), (-)()
+  , Pos1, Pos2, pos2, Pos3, pos3
+  , KnownNumType, toNum
   )
 import qualified Numeric.NumType.DK as N
 import Data.Proxy (Proxy(..))
@@ -248,6 +261,8 @@ type family (a::Dimension) / (d::Dimension) where
   (Dim l  m  t  i  th  n  j) / (Dim l' m' t' i' th' n' j')
     = Dim (l - l') (m - m') (t - t') (i - i') (th - th') (n - n') (j - j')
 
+type Inverse (d :: Dimension) = DOne / d
+
 {-
 We could provide the 'Mul' and 'Div' classes with full functional
 dependencies but that would be of limited utility as there is no
@@ -323,8 +338,8 @@ liftUntyped2Q f x1 x2 = let x1' = extractValue x1
 (/) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Fractional v) => v1 d1 v -> v2 d2 v -> p (d1 / d2) v
 (/) = liftUntyped2 (Prelude./) (Name.quotient)
 
-(^) :: (ToInteger (NT i), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Fractional v)
-    => v1 d1 v -> NT i -> v2 (d1 ^ i) v
+(^) :: (KnownNumType i, Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Fractional v)
+    => v1 d1 v -> Proxy i -> v2 (d1 ^ i) v
 x ^ n = let n' = (toNum n) :: Integer
             n'' = (toNum n) :: Int
          in liftUntyped (Prelude.^^ n') (Name.toPower n'') x
@@ -335,8 +350,8 @@ non-fractional numbers we provide the alternative power operator
 '^+' that is restricted to positive exponents.
 -}
 
-(^+) :: (ToInteger (NP n), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Num v)
-     => v1 d1 v -> NP n -> v2 (d1 ^ P n) v
+(^+) :: (KnownNumType (Pos1Plus n), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Num v)
+     => v1 d1 v -> Proxy (Pos1Plus n) -> v2 (d1 ^ Pos1Plus n) v
 x ^+ n = let n' = (toNum n) :: Integer
              n'' = (toNum n) :: Int
           in liftUntyped (Prelude.^ n') (Name.toPower n'') x
@@ -376,8 +391,8 @@ Roots of arbitrary (integral) degree. Appears to occasionally be useful
 for units as well as quantities.
 -}
 
-nroot :: (ToInteger (NT n), Dimensional v1, Floating v)
-      => NT n -> v1 d v -> Quantity (Root d n) v
+nroot :: (KnownNumType n, Dimensional v1, Floating v)
+      => Proxy n -> v1 d v -> Quantity (Root d n) v
 nroot n = let n' = 1 Prelude./ toNum n
            in liftUntypedQ (Prelude.** n')
 
@@ -397,8 +412,8 @@ We also provide an operator alternative to nroot for those that
 prefer such.
 -}
 
-(^/) :: (ToInteger (NT n), Dimensional v1, Floating v)
-     => v1 d v -> NT n -> Quantity (Root d n) v
+(^/) :: (KnownNumType n, Dimensional v1, Floating v)
+     => v1 d v -> Proxy n -> Quantity (Root d n) v
 (^/) = flip nroot
 
 {-
@@ -408,6 +423,25 @@ we will define a monoid instance that adds.
 instance (Num v) => Monoid (Quantity d v) where
   mempty = _0
   mappend = (+)
+
+{-
+
+= List functions =
+
+Here we define operators and functions to make working with homogenuous
+lists of dimensionals more convenient.
+
+We define two convenience operators for applying units to all
+elements of a functor (e.g. a list).
+-}
+
+(*~~) :: (Functor f, Num v) => f v -> Unit a d v -> f (Quantity d v)
+xs *~~ u = fmap ((* u) . dimensionless) xs
+
+(/~~) :: (Functor f, Fractional v) => f (Quantity d v) -> Unit a d v -> f v
+xs /~~ u = fmap (/~ u) xs
+
+infixl 7 *~~, /~~
 
 {-
 The sum of all elements in a list.
@@ -477,6 +511,17 @@ of the same type. The result will of course always be dimensionless.
 
 atan2 :: (Dimensional v1, Dimensional v2, RealFloat v) => v1 d v -> v2 d v -> Dimensionless v
 atan2 = liftUntyped2Q Prelude.atan2
+
+{-
+We add a polymorphic @siUnit@ which can be used in place a concrete
+SI unit (combination of SI base units). This allows polymorphic
+quantity creation and destruction without exposing the `Dimensional`
+constructor.
+-}
+
+-- TODO: reintroduce this, but it is more complicated now
+-- siUnit :: Num a => Unit d a
+-- siUnit = Dimensional 1
 
 {-
 The only unit we will define in this module is 'one'. The unit one
@@ -549,25 +594,25 @@ At the term level, Dimension' encodes a dimension as 7 integers, representing a 
 
 -}
 
-data Dimension' = Dim' Int Int Int Int Int Int Int deriving (Show,Eq,Ord)
+data Dimension' = Dim' !Int !Int !Int !Int !Int !Int !Int deriving (Show,Eq,Ord)
 
 class KnownDimension (d::Dimension) where toSIBasis :: Proxy d -> Dimension'
-instance ( ToInteger (NT l)
-         , ToInteger (NT m)
-         , ToInteger (NT t)
-         , ToInteger (NT i)
-         , ToInteger (NT th)
-         , ToInteger (NT n)
-         , ToInteger (NT j)
+instance ( KnownNumType l
+         , KnownNumType m
+         , KnownNumType t
+         , KnownNumType i
+         , KnownNumType th
+         , KnownNumType n
+         , KnownNumType j
          ) => KnownDimension (Dim l m t i th n j)
   where toSIBasis _ = Dim'
-                (toNum (undefined :: NT l))
-                (toNum (undefined :: NT m))
-                (toNum (undefined :: NT t))
-                (toNum (undefined :: NT i))
-                (toNum (undefined :: NT th))
-                (toNum (undefined :: NT n))
-                (toNum (undefined :: NT j))
+                (toNum (undefined :: Proxy l))
+                (toNum (undefined :: Proxy m))
+                (toNum (undefined :: Proxy t))
+                (toNum (undefined :: Proxy i))
+                (toNum (undefined :: Proxy th))
+                (toNum (undefined :: Proxy n))
+                (toNum (undefined :: Proxy j))
 
 getSIBasis :: forall val d v.(KnownDimension d) => val d v -> Dimension'
 getSIBasis _ = toSIBasis (Proxy :: Proxy d)
@@ -588,14 +633,14 @@ even a requirement.
 instance (KnownDimension d, Num v, Show v) => Show (Quantity d v) where
       show q@(Quantity x) = let powers = asList $ getSIBasis q
                                 units = ["m", "kg", "s", "A", "K", "mol", "cd"]
-                                dims = zipWith dimUnit units powers
-                             in foldl' (++) (show x) dims
+                                dims = concat $ zipWith dimUnit units powers
+                             in show x ++ dims
 
 instance (KnownDimension d, Num v, Show v) => Show (Unit a d v) where
       show q@(Unit _ x) = let powers = asList $ getSIBasis q
                               units = ["m", "kg", "s", "A", "K", "mol", "cd"]
-                              dims = zipWith dimUnit units powers
-                           in foldl' (++) (show x) dims
+                              dims = concat $ zipWith dimUnit units powers
+                           in show x ++ dims
 
 {-
 The helper function 'dimUnit' defined next conditions a 'String' (unit)

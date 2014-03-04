@@ -108,7 +108,6 @@ The drawback is that we are forced to use 'Fractional'.
 > candela :: Num v => Unit Atomic DLuminousIntensity v
 > candela = Unit (atomic ("cd", "candela")) 1
 
-
 = DiffTime conversion =
 
 It is not within the scope of this library to handle the complex
