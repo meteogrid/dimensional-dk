@@ -107,7 +107,7 @@ import Numeric.NumType.DK
   )
 import qualified Numeric.NumType.DK as N
 import Data.Proxy (Proxy(..))
-import Data.Foldable (Foldable(foldr, foldl'))
+import Data.Foldable (Foldable(foldr, fold))
 import Data.Monoid (Monoid(..))
 import qualified Numeric.Units.Dimensional.DK.UnitNames as Name
 import Numeric.Units.Dimensional.DK.UnitNames (NameAtom, UnitName, UnitNameTransformer, UnitNameTransformer2, atomic)
@@ -527,9 +527,12 @@ quantity creation and destruction without exposing the `Dimensional`
 constructor.
 -}
 
--- TODO: reintroduce this, but it is more complicated now
--- siUnit :: Num a => Unit d a
--- siUnit = Dimensional 1
+siUnit :: forall d v.(KnownDimension d, Num v) => Unit Composite d v
+siUnit = let powers = asList $ toSIBasis (Proxy :: Proxy d)
+             names = [name meter, name (kilo gram), name second, name ampere, name kelvin, name mole, name candela]
+             powerNames = zipWith Name.toPower' powers names
+             n = fold powerNames
+          in Unit n 1
 
 {-
 The unit one has dimension one and is the base unit of dimensionless values.
@@ -739,19 +742,14 @@ from its dimension.
 We neglect units since it is unclear how to represent them
 in a way that distinguishes them from quantities, or whether that is
 even a requirement.
+
 -}
 
-instance (KnownDimension d, Num v, Show v) => Show (Quantity d v) where
-      show q@(Quantity x) = let powers = asList $ getSIBasis q
-                                units = ["m", "kg", "s", "A", "K", "mol", "cd"]
-                                dims = concat $ zipWith dimUnit units powers
-                             in show x ++ dims
+instance (KnownDimension d, Fractional v, Show v) => Show (Quantity d v) where
+      show = showIn siUnit
 
-instance (KnownDimension d, Num v, Show v) => Show (Unit a d v) where
-      show q@(Unit _ x) = let powers = asList $ getSIBasis q
-                              units = ["m", "kg", "s", "A", "K", "mol", "cd"]
-                              dims = concat $ zipWith dimUnit units powers
-                           in show x ++ dims
+instance (KnownDimension d, Fractional v, Show v) => Show (Unit a d v) where
+      show = showIn siUnit
 
 {-
 The helper function 'dimUnit' defined next conditions a 'String' (unit)

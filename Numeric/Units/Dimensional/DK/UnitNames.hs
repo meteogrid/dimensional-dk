@@ -52,7 +52,7 @@ recip' :: UnitName -> UnitName
 recip' (UnitName m1) = UnitName $ fmap negate m1
 
 instance Show UnitName where
-  show = fullName
+  show = abbreviation
 
 abbreviation :: UnitName -> String
 abbreviation (UnitName m) = unwords $ map (showPower fst) $ M.toList m
