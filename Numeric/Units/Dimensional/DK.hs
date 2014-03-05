@@ -82,7 +82,7 @@ module Numeric.Units.Dimensional.DK
     (*~~), (/~~), sum, mean, dimensionlessLength,
     exp, log, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh, atan2,
     one, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, pi, tau,
-    -- TODO: siUnit, 
+    siUnit, 
     Dimension' (Dim'), KnownDimension, toSIBasis, getSIBasis,
     prefix, alias, dimensionless, unD,
     dmap, changeRep,
