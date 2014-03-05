@@ -752,19 +752,6 @@ instance (KnownDimension d, Fractional v, Show v) => Show (Unit a d v) where
       show = showIn siUnit
 
 {-
-The helper function 'dimUnit' defined next conditions a 'String' (unit)
-with an exponent, if appropriate. The reason we define 'dimUnit' at the
-top-level rather than in the where-clause is that it may be useful for
-users of the 'Extensible' module.
--}
-
-dimUnit :: String -> Int -> String
-dimUnit u n = case n of
-                0 -> ""
-                1 -> " " ++ u
-                n -> " " ++ u ++ "^" ++ show n
-
-{-
 The helper function asList converts a Dimension' value to a list of integers which may be easier to manipulate.
 -}
 
