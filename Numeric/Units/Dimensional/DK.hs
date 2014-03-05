@@ -341,16 +341,16 @@ liftUntyped2Q f x1 x2 = let x1' = extractValue x1
                          in Quantity (f x1' x2') 
 
 (*) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Num v) => v1 d1 v -> v2 d2 v -> p (d1 * d2) v
-(*) = liftUntyped2 (Prelude.*) (Name.product)
+(*) = liftUntyped2 (Prelude.*) (Name.product')
 
 (/) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Fractional v) => v1 d1 v -> v2 d2 v -> p (d1 / d2) v
-(/) = liftUntyped2 (Prelude./) (Name.quotient)
+(/) = liftUntyped2 (Prelude./) (Name.quotient')
 
 (^) :: (KnownNumType i, Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Fractional v)
     => v1 d1 v -> Proxy i -> v2 (d1 ^ i) v
 x ^ n = let n' = (toNum n) :: Integer
             n'' = (toNum n) :: Int
-         in liftUntyped (Prelude.^^ n') (Name.toPower n'') x
+         in liftUntyped (Prelude.^^ n') (Name.toPower' n'') x
 
 {-
 In the unlikely case someone needs to use this library with
@@ -362,7 +362,7 @@ non-fractional numbers we provide the alternative power operator
      => v1 d1 v -> Proxy (Pos1Plus n) -> v2 (d1 ^ Pos1Plus n) v
 x ^+ n = let n' = (toNum n) :: Integer
              n'' = (toNum n) :: Int
-          in liftUntyped (Prelude.^ n') (Name.toPower n'') x
+          in liftUntyped (Prelude.^ n') (Name.toPower' n'') x
 
 {-
 A special case is that dimensionless quantities are not restricted
@@ -530,7 +530,7 @@ constructor.
 siUnit :: forall d v.(KnownDimension d, Num v) => Unit Composite d v
 siUnit = let powers = asList $ toSIBasis (Proxy :: Proxy d)
              names = [name meter, name (kilo gram), name second, name ampere, name kelvin, name mole, name candela]
-             powerNames = zipWith Name.toPower' powers names
+             powerNames = zipWith Name.toPower powers names
              n = fold powerNames
           in Unit n 1
 

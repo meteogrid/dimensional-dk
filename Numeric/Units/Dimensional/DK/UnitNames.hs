@@ -2,7 +2,7 @@
 
 module Numeric.Units.Dimensional.DK.UnitNames where
 
-import Prelude
+import Prelude hiding (product, recip)
 import Data.Monoid
 import qualified Data.Map.Strict as M
 import Control.Monad (liftM, liftM2)
@@ -17,7 +17,7 @@ atomic n = UnitName $ M.singleton n 1
 
 instance Monoid UnitName where
   mempty = UnitName $ M.empty
-  mappend = product'
+  mappend = product
 
 nameOne :: UnitName
 nameOne = mempty
@@ -32,24 +32,24 @@ asAtom (UnitName m) | [(n, 1)] <- M.toList m = Just n
 type UnitNameTransformer = Maybe UnitName -> Maybe UnitName
 type UnitNameTransformer2 = Maybe UnitName -> Maybe UnitName -> Maybe UnitName
 
-toPower :: Int -> UnitNameTransformer
-toPower p = liftM $ toPower' p
+toPower' :: Int -> UnitNameTransformer
+toPower' p = liftM $ toPower p
 
-product, quotient :: UnitNameTransformer2
-product = liftM2 product'
-quotient = liftM2 quotient'
+product', quotient' :: UnitNameTransformer2
+product' = liftM2 product
+quotient' = liftM2 quotient
 
-toPower' :: Int -> UnitName -> UnitName
-toPower' p (UnitName m) = UnitName $ M.filter (/= 0) $ M.map (* p) m
+toPower :: Int -> UnitName -> UnitName
+toPower p (UnitName m) = UnitName $ M.filter (/= 0) $ M.map (* p) m
 
-product' :: UnitName -> UnitName -> UnitName
-product' (UnitName m1) (UnitName m2) = UnitName $ M.filter (/= 0) $ M.unionWith (+) m1 m2
+product :: UnitName -> UnitName -> UnitName
+product (UnitName m1) (UnitName m2) = UnitName $ M.filter (/= 0) $ M.unionWith (+) m1 m2
 
-quotient' :: UnitName -> UnitName -> UnitName
-quotient' n1 n2 = product' n1 (recip' n2)
+quotient :: UnitName -> UnitName -> UnitName
+quotient n1 n2 = product n1 (recip n2)
 
-recip' :: UnitName -> UnitName
-recip' (UnitName m1) = UnitName $ fmap negate m1
+recip :: UnitName -> UnitName
+recip (UnitName m1) = UnitName $ fmap negate m1
 
 instance Show UnitName where
   show = abbreviation
