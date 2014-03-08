@@ -72,7 +72,7 @@ and implementation.
 -}
 
 module Numeric.Units.Dimensional.DK
-  ( (^), (^+), (^/), (**), (*), (/), (+), (-), (*~), (/~),
+  ( (^), (^/), (**), (*), (/), (+), (-), (*~), (/~),
     Dimensional,
     Unit(..), Quantity, Dimension (Dim), Atomicity(..),
     DOne, DLength, DMass, DTime, DElectricCurrent, DThermodynamicTemperature, DAmountOfSubstance, DLuminousIntensity,
@@ -101,8 +101,8 @@ import qualified Prelude
 import Data.List (genericLength)
 import Data.Maybe (Maybe (Just, Nothing), catMaybes)
 import Numeric.NumType.DK
-  ( NumType (Zero, Pos1Plus), (+)(), (-)()
-  , Pos1, Pos2, pos2, Pos3, pos3
+  ( NumType (Zero, Pos1, Pos2, Pos3), (+)(), (-)()
+  , pos2, pos3
   , KnownNumType, toNum
   )
 import qualified Numeric.NumType.DK as N
@@ -118,7 +118,7 @@ To prevent unpleasant surprises we give operators the same fixity
 as the Prelude.
 -}
 
-infixr 8  ^, ^+, ^/, **
+infixr 8  ^, ^/, **
 infixl 7  *, /
 infixl 6  +, -
 infixl 7  *~, /~
@@ -353,18 +353,7 @@ x ^ n = let n' = (toNum n) :: Integer
          in liftUntyped (Prelude.^^ n') (Name.toPower' n'') x
 
 {-
-In the unlikely case someone needs to use this library with
-non-fractional numbers we provide the alternative power operator
-'^+' that is restricted to positive exponents.
--}
 
-(^+) :: (KnownNumType (Pos1Plus n), Dimensional v1, Dimensional v2, v2 ~ DimensionalDropAtomicity v1, Num v)
-     => v1 d1 v -> Proxy (Pos1Plus n) -> v2 (d1 ^ Pos1Plus n) v
-x ^+ n = let n' = (toNum n) :: Integer
-             n'' = (toNum n) :: Int
-          in liftUntyped (Prelude.^ n') (Name.toPower' n'') x
-
-{-
 A special case is that dimensionless quantities are not restricted
 to integer exponents. This is accommodated by the '**' operator
 defined later.

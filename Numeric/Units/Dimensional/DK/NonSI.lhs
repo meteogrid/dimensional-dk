@@ -181,6 +181,12 @@ to 1 mmHg.
 > stokes = alias ("St", "stokes") (centi meter ^ pos2 / second)
 
 
+= Temperature =
+
+> degreeFahrenheit :: (Fractional a) => Unit Atomic DThermodynamicTemperature a
+> degreeFahrenheit = alias ("degF", "degree Fahrenheit") ((5 Prelude./ 9) *~ degreeCelsius)
+
+
 = Imperial Volumes =
 
 Per http://en.wikipedia.org/wiki/Imperial_units and http://en.wikipedia.org/wiki/Cup_(unit)#Imperial_cup.
