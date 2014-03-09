@@ -84,7 +84,7 @@ module Numeric.Units.Dimensional.DK
     one, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, pi, tau,
     siUnit, showIn,
     Dimension' (Dim'), KnownDimension, toSIBasis, getSIBasis,
-    prefix, alias, dimensionless, unD,
+    prefix, alias, unit, dimensionless, unD,
     dmap, changeRep,
     deka, deca, hecto, kilo, mega, giga, tera, peta, exa, zetta, yotta,
     deci, centi, milli, micro, nano, pico, femto, atto, zepto, yocto,
@@ -769,6 +769,9 @@ prefix name val = applyPrefix $ UnitPrefix name val
 
 alias :: (Dimensional v1, Num v) => NameAtom -> v1 d v -> Unit Atomic d v
 alias name x = Unit (Name.atomic name) (extractValue x)
+
+unit :: (Num v) => UnitName -> Quantity d v -> Unit Composite d v
+unit name x = Unit name (extractValue x)
 
 name :: Unit a d v -> UnitName
 name (Unit n _) = n
