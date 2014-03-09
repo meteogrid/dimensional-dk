@@ -84,7 +84,7 @@ module Numeric.Units.Dimensional.DK
     one, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, pi, tau,
     siUnit, showIn,
     Dimension' (Dim'), KnownDimension, toSIBasis, getSIBasis,
-    prefix, alias, unit, dimensionless, unD,
+    prefix, alias, unit, dimensionless, unD, name,
     dmap, changeRep,
     deka, deca, hecto, kilo, mega, giga, tera, peta, exa, zetta, yotta,
     deci, centi, milli, micro, nano, pico, femto, atto, zepto, yocto,
