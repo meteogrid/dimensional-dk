@@ -186,8 +186,8 @@ to 1 mmHg.
 > degreeFahrenheit :: (Fractional a) => Unit Atomic DThermodynamicTemperature a
 > degreeFahrenheit = alias ("degF", "degree Fahrenheit") ((5 Prelude./ 9) *~ degreeCelsius)
 
-> degreeRankine :: (Fractional a) => Unit DThermodynamicTemperature a
-> degreeRankine = degreeFahrenheit
+> degreeRankine :: (Fractional a) => Unit Atomic DThermodynamicTemperature a
+> degreeRankine = alias ("degR", "degree Rankine") degreeFahrenheit
 
 = Imperial Volumes =
 
