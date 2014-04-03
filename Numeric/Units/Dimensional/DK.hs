@@ -83,7 +83,7 @@ module Numeric.Units.Dimensional.DK
     exp, log, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh, atan2,
     one, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, pi, tau,
     siUnit, showIn,
-    Dimension' (Dim'), KnownDimension, toSIBasis, getSIBasis,
+    Dimension' (Dim'), KnownDimension, toSIBasis, HasDimension(..),
     prefix, alias, unit, dimensionless, unD, name,
     dmap, changeRep,
     deka, deca, hecto, kilo, mega, giga, tera, peta, exa, zetta, yotta,
@@ -717,8 +717,14 @@ instance ( KnownNumType l
                 (toNum (undefined :: Proxy n))
                 (toNum (undefined :: Proxy j))
 
-getSIBasis :: forall val d v.(KnownDimension d) => val d v -> Dimension'
-getSIBasis _ = toSIBasis (Proxy :: Proxy d)
+class HasDimension (t :: *) where
+  getSIBasis :: t -> Dimension'
+
+instance (KnownDimension d) => HasDimension (Quantity d v) where
+  getSIBasis _ = toSIBasis (Proxy :: Proxy d)
+
+instance (KnownDimension d) => HasDimension (Unit a d v) where
+  getSIBasis _ = toSIBasis (Proxy :: Proxy d)
 
 {-
 
