@@ -166,7 +166,7 @@ One torr (symbol: Torr) is defined as 1/760 atm, which is approximately equal
 to 1 mmHg.
 
 > torr :: (Fractional a) => Unit Atomic DPressure a
-> torr = alias ("torr", "torr") ((1 Prelude./ 760) *~ atmosphere)
+> torr = alias ("Torr", "torr") ((1 Prelude./ 760) *~ atmosphere)
 
 
 = Radiation =
