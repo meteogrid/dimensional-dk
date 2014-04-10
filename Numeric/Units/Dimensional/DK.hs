@@ -366,20 +366,20 @@ Of these, negation, addition and subtraction are particularly simple
 as they are done in a single physical dimension.
 -}
 
-negate :: (Dimensional v1, Num v) => v1 d v -> Quantity d v
+negate :: Num v => Quantity d v -> Quantity d v
 negate = liftUntypedQ (Prelude.negate)
 
-(+) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Num v) => v1 d v -> v2 d v -> Quantity d v
+(+) :: Num v => Quantity d v -> Quantity d v -> Quantity d v
 (+) = liftUntyped2Q (Prelude.+)
 
-(-) :: (Dimensional v1, Dimensional v2, Dimensional p, p ~ (DimensionalCombination v1 v2), Num v) => v1 d v -> v2 d v -> Quantity d v
+(-) :: Num v => Quantity d v -> Quantity d v -> Quantity d v
 (-) = liftUntyped2Q (Prelude.-)
 
 {-
 Absolute value.
 -}
 
-abs :: (Dimensional v1, Num v) => v1 d v -> Quantity d v
+abs :: Num v => Quantity d v -> Quantity d v
 abs = liftUntypedQ (Prelude.abs)
 
 
@@ -388,8 +388,8 @@ Roots of arbitrary (integral) degree. Appears to occasionally be useful
 for units as well as quantities.
 -}
 
-nroot :: (KnownNumType n, Dimensional v1, Floating v)
-      => Proxy n -> v1 d v -> Quantity (Root d n) v
+nroot :: (KnownNumType n, Floating v)
+      => Proxy n -> Quantity d v -> Quantity (Root d n) v
 nroot n = let n' = 1 Prelude./ toNum n
            in liftUntypedQ (Prelude.** n')
 
@@ -397,11 +397,9 @@ nroot n = let n' = 1 Prelude./ toNum n
 We provide short-hands for the square and cubic roots.
 -}
 
-sqrt :: (Dimensional v1, Floating v)
-     => v1 d v -> Quantity (Root d Pos2) v
+sqrt :: Floating v => Quantity d v -> Quantity (Root d Pos2) v
 sqrt = nroot pos2
-cbrt :: (Dimensional v1, Floating v)
-     => v1 d v -> Quantity (Root d Pos3) v
+cbrt :: Floating v => Quantity d v -> Quantity (Root d Pos3) v
 cbrt = nroot pos3
 
 {-
@@ -409,8 +407,8 @@ We also provide an operator alternative to nroot for those that
 prefer such.
 -}
 
-(^/) :: (KnownNumType n, Dimensional v1, Floating v)
-     => v1 d v -> Proxy n -> Quantity (Root d n) v
+(^/) :: (KnownNumType n, Floating v)
+     => Quantity d v -> Proxy n -> Quantity (Root d n) v
 (^/) = flip nroot
 
 {-
