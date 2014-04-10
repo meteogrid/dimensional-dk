@@ -102,9 +102,9 @@ The function 'fromDegreeCelsiusAbsolute' should be used in lieu of
 when working with absolute temperatures.
 
 > fromDegreeCelsiusAbsolute :: Fractional a => a -> ThermodynamicTemperature a
-> fromDegreeCelsiusAbsolute x = (dimensionless x) * degreeCelsius + (dimensionless 273.15) * degreeCelsius
+> fromDegreeCelsiusAbsolute x = x *~ degreeCelsius + 273.15 *~ degreeCelsius
 > toDegreeCelsiusAbsolute :: Fractional a => ThermodynamicTemperature a -> a
-> toDegreeCelsiusAbsolute x = (x - (dimensionless 273.15 * degreeCelsius)) /~ degreeCelsius
+> toDegreeCelsiusAbsolute x = (x - 273.15 *~ degreeCelsius) /~ degreeCelsius
 
 
 == Table 3b ==
@@ -144,9 +144,9 @@ We start with time which we grant exclusive rights to 'minute' and
 'second'.
 
 > minute, hour, day :: Num a => Unit Atomic DTime a
-> minute = alias ("min", "minute") (dimensionless 60 * second)
-> hour   = alias ("h", "hour") (dimensionless 60 * minute)
-> day    = alias ("d", "day") (dimensionless 24 * hour) -- Mean solar day.
+> minute = alias ("min", "minute") (60 *~ second)
+> hour   = alias ("h", "hour") (60 *~ minute)
+> day    = alias ("d", "day") (24 *~ hour) -- Mean solar day.
 
 Since 'minute' and 'second' are already in use for time we use
 'arcminute' and 'arcsecond' [2] for plane angle instead.
@@ -173,7 +173,7 @@ temperature.
 > liter = alias ("L", "liter") litre             -- American English.
 
 > tonne, metricTon :: Fractional a => Unit Atomic DMass a
-> tonne     = alias ("t", "tonne") (dimensionless 1000 * (kilo gram)) -- Name in original SI text.
+> tonne     = alias ("t", "tonne") (1000 *~ kilo gram) -- Name in original SI text.
 > metricTon = alias ("t", "metric ton") tonne                   -- American name.
 
 In 2012 the IAU redefined the astronomical unit as a conventional
@@ -181,7 +181,7 @@ unit of length directly tied to the meter, with a length of exactly
 149,597,870,700 m and the official abbreviation of au[3].
 
 > astronomicalUnit :: Num a => Unit Atomic DLength a
-> astronomicalUnit = alias ("au", "astronomical unit") (dimensionless 149597870700 * meter)
+> astronomicalUnit = alias ("au", "astronomical unit") (149597870700 *~ meter)
 
 
 = References =
