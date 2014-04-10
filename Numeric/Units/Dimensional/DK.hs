@@ -459,7 +459,7 @@ The length of the list as a 'Dimensionless'. This can be useful for
 purposes of e.g. calculating averages.
 -}
 
-dimensionlessLength :: (Dimensional v1, Num v) => [(v1 d v)] -> Dimensionless v
+dimensionlessLength :: Num v => [b] -> Dimensionless v
 dimensionlessLength = dimensionless . genericLength
 
 {-
